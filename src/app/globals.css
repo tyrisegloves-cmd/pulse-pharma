@@ -93,6 +93,32 @@
   transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* ---------- Hero EKG decoration ---------- */
+/*
+ * Dash-draw animation: the path length of the hero EKG line is ~1350 units.
+ * We animate stroke-dashoffset from full length to 0 (draw in), then
+ * reset instantly. This gives a continuous "tracing" feel that echoes the
+ * logo heartbeat without overpowering the photo.
+ */
+@keyframes hero-ekg-draw {
+  0%   { stroke-dashoffset: 1350; }
+  80%  { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.hero-ekg-path {
+  stroke-dasharray: 1350;
+  stroke-dashoffset: 1350;
+  animation: hero-ekg-draw 3.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-ekg-path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
 /* ---------- Skeleton shimmer ---------- */
 @keyframes shimmer {
   0%   { background-position: -400px 0; }
