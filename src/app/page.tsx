@@ -10,55 +10,136 @@ export default function Home() {
 
   return (
     <div>
-      {/* Hero Section
-          Bold, full-bleed pharmacy photo. Text sits on top of a
-          left-anchored dark scrim so the image reads clearly on the
-          right while copy stays crisp on the left. Never a full white
-          wash — the photo must remain the star. */}
+      {/*
+        Hero Section
+        Full-bleed branded pharmacy photo (pharmacist + customer at counter).
+        Three overlay layers keep text legible without washing out the image:
+          1. Desktop: left-to-right dark scrim — copy is on a dark field,
+             the photo breathes freely on the right.
+          2. Mobile: bottom-to-top scrim — full bottom darkening so the
+             stacked text block always has contrast regardless of crop.
+          3. White-to-transparent top-left highlight — gives the "white fade"
+             feel requested while preserving white text contrast.
+        object-position: 60% center keeps the pharmacist+customer in frame
+        on all viewports and prevents awkward left-edge cropping.
+      */}
       <section className="relative border-b border-red-100 overflow-hidden bg-gray-900">
-        {/* Background image */}
+
+        {/* ── Background image ── */}
         <div className="absolute inset-0">
           <img
             src="/images/hero-pharmacy.jpg"
-            alt="Pulse Pharma pharmacist in white coat discussing medication with a customer"
-            className="w-full h-full object-cover object-center"
+            alt="Pulse Pharma pharmacist in white coat discussing medication with a customer at the counter"
+            className="w-full h-full object-cover"
+            style={{ objectPosition: '60% center' }}
           />
 
-          {/* Text-protection scrim.
-              - On mobile: single vertical dark gradient (bottom-anchored)
-                so copy is legible over any part of the image.
-              - On desktop: horizontal dark-to-transparent gradient
-                anchored on the left so the pharmacist scene stays
-                visible on the right. */}
+          {/*
+            Layer 1 — Desktop: left-anchored dark-to-transparent gradient.
+            Covers ~55% of the width so text on the left is always on a
+            near-opaque dark field; the right half of the photo is untouched.
+            On mobile this layer is replaced by Layer 2 below.
+          */}
           <div
             aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-t from-gray-900/85 via-gray-900/55 to-gray-900/30 lg:bg-gradient-to-r lg:from-gray-950/85 lg:via-gray-900/55 lg:to-transparent"
-          ></div>
-          {/* Subtle red brand tint in the shadows — keeps the whole
-              composition feeling on-brand without dyeing the photo. */}
+            className="absolute inset-0 hidden lg:block"
+            style={{
+              background:
+                'linear-gradient(to right, rgba(10,10,20,0.88) 0%, rgba(10,10,20,0.75) 38%, rgba(10,10,20,0.35) 62%, transparent 80%)',
+            }}
+          />
+
+          {/*
+            Layer 1b — Tablet (sm → lg): softer split — text side darker,
+            photo side still visible.
+          */}
           <div
             aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-br from-red-900/25 via-transparent to-transparent mix-blend-multiply"
-          ></div>
+            className="absolute inset-0 block lg:hidden"
+            style={{
+              background:
+                'linear-gradient(to bottom, rgba(10,10,20,0.55) 0%, rgba(10,10,20,0.70) 45%, rgba(10,10,20,0.90) 100%)',
+            }}
+          />
+
+          {/*
+            Layer 2 — White-to-transparent glow on the top-left corner.
+            Creates the "white fade" quality that references the bright
+            pharmacy interior without touching the rest of the image.
+            Opacity is kept low so white text contrast is unaffected.
+          */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{
+              background:
+                'radial-gradient(ellipse 55% 60% at 0% 0%, rgba(255,255,255,0.08) 0%, transparent 70%)',
+            }}
+          />
+
+          {/*
+            Layer 3 — Red brand tint in the deep shadows.
+            mix-blend-multiply keeps it from tinting bright areas of the photo.
+          */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 mix-blend-multiply"
+            style={{
+              background:
+                'linear-gradient(135deg, rgba(185,28,28,0.20) 0%, transparent 55%)',
+            }}
+          />
+
+          {/*
+            Layer 4 — Animated EKG pulse line at the very bottom of the hero.
+            Echoes the brand logo's heartbeat motif. Low opacity so it reads
+            as texture rather than a competing element.
+          */}
+          <div aria-hidden="true" className="absolute bottom-0 left-0 right-0 h-16 opacity-25 pointer-events-none">
+            <svg
+              viewBox="0 0 1200 60"
+              preserveAspectRatio="none"
+              className="w-full h-full hero-ekg"
+            >
+              <defs>
+                <linearGradient id="ekgGrad" x1="0" x2="1" y1="0" y2="0">
+                  <stop offset="0%"   stopColor="#dc2626" stopOpacity="0" />
+                  <stop offset="20%"  stopColor="#dc2626" stopOpacity="1" />
+                  <stop offset="80%"  stopColor="#dc2626" stopOpacity="1" />
+                  <stop offset="100%" stopColor="#dc2626" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              {/* Flat-line with two QRS spikes across the full width */}
+              <path
+                d="M0 30 L280 30 L295 30 L300 22 L308 38 L316 18 L324 42 L330 30 L580 30 L595 30 L600 22 L608 38 L616 18 L624 42 L630 30 L1200 30"
+                fill="none"
+                stroke="url(#ekgGrad)"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="hero-ekg-path"
+              />
+            </svg>
+          </div>
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
+        {/* ── Hero content ── */}
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-36">
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-600/90 text-white text-sm font-semibold mb-6 shadow-sm ring-1 ring-white/20">
               <ShieldCheck size={16} /> Licensed Pharmacy in Accra
             </span>
-            <h1 className="text-4xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.05] mb-6 drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)]">
+            <h1 className="text-4xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.05] mb-6 drop-shadow-[0_2px_16px_rgba(0,0,0,0.5)]">
               Your health,{" "}
               <span className="text-red-400">delivered</span> with precision and
               care.
             </h1>
-            <p className="text-lg text-gray-100/90 mb-8 max-w-lg drop-shadow-[0_1px_6px_rgba(0,0,0,0.35)]">
+            <p className="text-lg text-gray-100/90 mb-8 max-w-lg drop-shadow-[0_1px_8px_rgba(0,0,0,0.5)]">
               Get your prescriptions filled and everyday health essentials
               delivered to your door in hours. Verified by licensed pharmacists.
             </p>
 
-            {/* Search sits inside a solid white card so form controls
-                stay high-contrast and never fight the photo. */}
+            {/* Search — solid white card keeps form controls always legible */}
             <div className="relative max-w-md mb-6 bg-white/95 backdrop-blur-sm rounded-xl shadow-xl ring-1 ring-black/5 p-1.5">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-gray-400" />
