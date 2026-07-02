@@ -4,53 +4,99 @@ import { useScroll, useTransform, motion } from 'framer-motion';
 import { useRef } from 'react';
 
 interface Image {
-	src: string;
-	alt?: string;
+  src: string;
+  alt?: string;
 }
 
 interface ZoomParallaxProps {
-	/** Array of images to be displayed in the parallax effect max 7 images */
-	images: Image[];
+  /** Array of images — index 0 is the full-screen centerpiece, 1–6 are satellites */
+  images: Image[];
 }
+
+// Satellite layout: each entry describes how the inner image div is positioned
+// relative to the sticky viewport (50vw / 50vh is dead-centre).
+// All values are CSS strings so they drop straight into style props.
+const satelliteLayout = [
+  // index 1 — top-left wide banner
+  { top: '5vh',   left: '5vw',   width: '38vw', height: '28vh' },
+  // index 2 — mid-left tall tile
+  { top: '20vh',  left: '5vw',   width: '22vw', height: '40vh' },
+  // index 3 — top-right wide banner
+  { top: '5vh',   right: '5vw',  width: '38vw', height: '28vh' },
+  // index 4 — bottom-left
+  { bottom: '8vh', left: '5vw',  width: '22vw', height: '25vh' },
+  // index 5 — bottom-right
+  { bottom: '8vh', right: '5vw', width: '38vw', height: '25vh' },
+  // index 6 — mid-right tall tile
+  { top: '20vh',  right: '5vw',  width: '22vw', height: '40vh' },
+] as const;
 
 export function ZoomParallax({ images }: ZoomParallaxProps) {
-	const container = useRef(null);
-	const { scrollYProgress } = useScroll({
-		target: container,
-		offset: ['start start', 'end end'],
-	});
+  const container = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: container,
+    offset: ['start start', 'end end'],
+  });
 
-	const scale4 = useTransform(scrollYProgress, [0, 1], [1, 4]);
-	const scale5 = useTransform(scrollYProgress, [0, 1], [1, 5]);
-	const scale6 = useTransform(scrollYProgress, [0, 1], [1, 6]);
-	const scale8 = useTransform(scrollYProgress, [0, 1], [1, 8]);
-	const scale9 = useTransform(scrollYProgress, [0, 1], [1, 9]);
+  // Centerpiece zooms the most — it fills the frame by the end of the scroll
+  const scaleCenter = useTransform(scrollYProgress, [0, 1], [1, 4]);
+  // Satellites zoom slower so they peel away before the centre takes over
+  const satelliteScales = [
+    useTransform(scrollYProgress, [0, 1], [1, 5]),
+    useTransform(scrollYProgress, [0, 1], [1, 6]),
+    useTransform(scrollYProgress, [0, 1], [1, 5]),
+    useTransform(scrollYProgress, [0, 1], [1, 6]),
+    useTransform(scrollYProgress, [0, 1], [1, 8]),
+    useTransform(scrollYProgress, [0, 1], [1, 9]),
+  ];
 
-	const scales = [scale4, scale5, scale6, scale5, scale6, scale8, scale9];
+  return (
+    <div ref={container} className="relative h-[300vh]">
+      {/* Sticky frame — clips everything to the viewport height */}
+      <div className="sticky top-0 h-screen overflow-hidden">
 
-	return (
-		<div ref={container} className="relative h-[300vh]">
-			<div className="sticky top-0 h-screen overflow-hidden">
-				{images.map(({ src, alt }, index) => {
-					const scale = scales[index % scales.length];
+        {/* ── Centerpiece (index 0) ── fills the whole frame */}
+        {images[0] && (
+          <motion.div
+            style={{ scale: scaleCenter }}
+            className="absolute inset-0"
+          >
+            <img
+              src={images[0].src}
+              alt={images[0].alt ?? 'Pharmacy showcase'}
+              className="h-full w-full object-cover object-center"
+            />
+          </motion.div>
+        )}
 
-					return (
-						<motion.div
-							key={index}
-							style={{ scale }}
-							className={`absolute top-0 flex h-full w-full items-center justify-center ${index === 1 ? '[&>div]:!-top-[30vh] [&>div]:!left-[5vw] [&>div]:!h-[30vh] [&>div]:!w-[35vw]' : ''} ${index === 2 ? '[&>div]:!-top-[10vh] [&>div]:!-left-[25vw] [&>div]:!h-[45vh] [&>div]:!w-[20vw]' : ''} ${index === 3 ? '[&>div]:!left-[27.5vw] [&>div]:!h-[25vh] [&>div]:!w-[25vw]' : ''} ${index === 4 ? '[&>div]:!top-[27.5vh] [&>div]:!left-[5vw] [&>div]:!h-[25vh] [&>div]:!w-[20vw]' : ''} ${index === 5 ? '[&>div]:!top-[27.5vh] [&>div]:!-left-[22.5vw] [&>div]:!h-[25vh] [&>div]:!w-[30vw]' : ''} ${index === 6 ? '[&>div]:!top-[22.5vh] [&>div]:!left-[25vw] [&>div]:!h-[15vh] [&>div]:!w-[15vw]' : ''} `}
-						>
-							<div className="relative h-[25vh] w-[25vw]">
-								<img
-									src={src || '/placeholder.svg'}
-									alt={alt || `Parallax image ${index + 1}`}
-									className="h-full w-full object-cover"
-								/>
-							</div>
-						</motion.div>
-					);
-				})}
-			</div>
-		</div>
-	);
+        {/* ── Satellite tiles (index 1–6) ── */}
+        {images.slice(1).map((img, i) => {
+          const layout = satelliteLayout[i];
+          if (!layout) return null;
+          const scale = satelliteScales[i];
+
+          return (
+            <motion.div
+              key={i + 1}
+              style={{ scale }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <div
+                className="absolute overflow-hidden rounded-lg shadow-xl"
+                style={layout as React.CSSProperties}
+              >
+                <img
+                  src={img.src}
+                  alt={img.alt ?? `Showcase image ${i + 2}`}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
+
