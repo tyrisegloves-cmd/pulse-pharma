@@ -1,0 +1,232 @@
+@import "tailwindcss";
+
+/* ---------- Scroll-triggered reveals ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- Cart badge bounce ---------- */
+@keyframes cart-bounce {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.35) translateY(-3px); }
+  55% { transform: scale(0.92); }
+  75% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.animate-cart-bounce {
+  animation: cart-bounce 0.5s cubic-bezier(0.28, 0.84, 0.42, 1);
+}
+
+@keyframes cart-icon-nudge {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-8deg); }
+  60% { transform: rotate(6deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.animate-cart-nudge {
+  animation: cart-icon-nudge 0.5s ease-in-out;
+}
+
+/* ---------- Logo pulse (header mark) ---------- */
+/*
+ * The trace is a ~44-unit path. We set the stroke dash to that length and
+ * animate the offset from full length (invisible) to 0 (fully drawn), then
+ * hold, then reset. Paired with a subtle scale/glow pulse on the badge.
+ */
+@keyframes logo-trace-draw {
+  0%   { stroke-dashoffset: 44; opacity: 0.2; }
+  25%  { stroke-dashoffset: 0;  opacity: 1;   }
+  75%  { stroke-dashoffset: 0;  opacity: 1;   }
+  100% { stroke-dashoffset: -44; opacity: 0.2; }
+}
+
+@keyframes logo-badge-beat {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);   }
+  25%      { transform: scale(1.05); box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.18); }
+  40%      { transform: scale(1);    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);   }
+}
+
+.logo-pulse {
+  animation: logo-badge-beat 2.2s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform, box-shadow;
+}
+
+.logo-pulse-trace {
+  stroke-dasharray: 44;
+  stroke-dashoffset: 44;
+  animation: logo-trace-draw 2.2s ease-in-out infinite;
+  will-change: stroke-dashoffset, opacity;
+}
+
+/* ---------- EKG pulse line ---------- */
+/*
+ * A subtle "beat": the active trace pulses in stroke opacity to look alive
+ * without the whole line jerking. Progress width transitions smoothly when
+ * the stage advances.
+ */
+@keyframes pulse-beat {
+  0%   { stroke-opacity: 0.55; filter: drop-shadow(0 0 0 rgba(220, 38, 38, 0)); }
+  20%  { stroke-opacity: 1;    filter: drop-shadow(0 0 3px rgba(220, 38, 38, 0.55)); }
+  35%  { stroke-opacity: 0.75; filter: drop-shadow(0 0 1px rgba(220, 38, 38, 0.25)); }
+  100% { stroke-opacity: 0.55; filter: drop-shadow(0 0 0 rgba(220, 38, 38, 0)); }
+}
+
+.pulse-line-beat {
+  animation: pulse-beat 1.1s ease-in-out infinite;
+}
+
+.pulse-progress-rect {
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- Skeleton shimmer ---------- */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.shimmer {
+  background-color: #f3f4f6;
+  background-image: linear-gradient(
+    90deg,
+    #f3f4f6 0px,
+    #e5e7eb 120px,
+    #f3f4f6 240px
+  );
+  background-size: 480px 100%;
+  background-repeat: no-repeat;
+  animation: shimmer 1.4s linear infinite;
+}
+
+/* ---------- Drag-and-drop drop zone ---------- */
+.dropzone {
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.25s ease,
+    transform 0.2s ease;
+}
+
+.dropzone--active {
+  border-color: #dc2626 !important;
+  background-color: #fef2f2 !important;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.08);
+  transform: scale(1.005);
+}
+
+@keyframes dropzone-ring {
+  0%   { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+.dropzone--active .dropzone-ring {
+  animation: dropzone-ring 1.4s ease-out infinite;
+}
+
+@keyframes drop-success {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+.dropzone--dropped {
+  animation: drop-success 0.45s cubic-bezier(0.28, 0.84, 0.42, 1);
+}
+
+/* ---------- Splash screen ---------- */
+/*
+ * Overlay fades out as a whole; inner items enter with a gentle
+ * staggered rise (logo → name → slogan → rule). Timings kept short
+ * and easing soft to stay clinical rather than showy.
+ */
+.splash {
+  opacity: 1;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+.splash--hide {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@keyframes splash-item-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.splash-item {
+  opacity: 0;
+  animation: splash-item-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.splash-item--logo   { animation-delay: 0.1s; }
+.splash-item--name   { animation-delay: 0.35s; }
+.splash-item--slogan { animation-delay: 0.55s; }
+.splash-item--rule   { animation-delay: 0.75s; }
+
+/* ---------- Reduced motion: disable all decorative motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .animate-cart-bounce,
+  .animate-cart-nudge,
+  .pulse-line-beat,
+  .dropzone-ring,
+  .dropzone--dropped,
+  .logo-pulse,
+  .logo-pulse-trace {
+    animation: none;
+  }
+
+  .logo-pulse-trace {
+    /* Ensure the trace is fully drawn and visible when motion is off */
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  .splash {
+    transition: none;
+  }
+
+  .splash-item {
+    animation: none;
+    opacity: 1;
+  }
+
+  .pulse-progress-rect {
+    transition: none;
+  }
+
+  .shimmer {
+    animation: none;
+    background: #f3f4f6;
+  }
+
+  .motion-lift,
+  .motion-press,
+  .dropzone,
+  .dropzone--active {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+}
