@@ -7,9 +7,10 @@ import { ZoomParallax } from "@/components/ui/zoom-parallax";
 const showcaseImages = [
   {
     // Index 0 is the centerpiece — it fills the viewport at full zoom
-    src: "/hero-pharmacy.jpg",
+    src: "/images/hero-pharmacy.jpg",
     alt: "Pulse Pharma pharmacist advising a customer in store",
   },
+
   {
     src: "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=1280&h=720&fit=crop&crop=entropy&auto=format&q=80",
     alt: "Pharmacist preparing medication",
