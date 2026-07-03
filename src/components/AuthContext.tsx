@@ -13,32 +13,37 @@ interface AuthContextType {
   };
 }
 
+const DEFAULT_USER = {
+  name: "Kwame Mensah",
+  email: "kwame.mensah@example.com",
+  phone: "+233 20 123 4567",
+};
+
 const AuthContext = createContext<AuthContextType>({
   isLoggedIn: false,
   login: () => {},
   logout: () => {},
-  user: {
-    name: "Kwame Mensah",
-    email: "kwame.mensah@example.com",
-    phone: "+233 20 123 4567",
-  },
+  user: DEFAULT_USER,
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
+  // Single effect for initialization — reduces re-render passes
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("pulse_isLoggedIn");
-      if (stored === "true") {
-        setIsLoggedIn(true);
+    const initializeAuth = async () => {
+      try {
+        const stored = localStorage.getItem("pulse_isLoggedIn");
+        setIsLoggedIn(stored === "true");
+      } catch {
+        // ignore storage error
+      } finally {
+        setIsInitialized(true);
       }
-    } catch {
-      // ignore storage error
-    } finally {
-      setIsInitialized(true);
-    }
+    };
+
+    initializeAuth();
   }, []);
 
   const login = () => {
@@ -59,17 +64,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Return early while initializing to avoid exposing uninitialized state
+  if (!isInitialized) {
+    return (
+      <AuthContext.Provider
+        value={{
+          isLoggedIn: false,
+          login: () => {},
+          logout: () => {},
+          user: DEFAULT_USER,
+        }}
+      >
+        {children}
+      </AuthContext.Provider>
+    );
+  }
+
   return (
     <AuthContext.Provider
       value={{
         isLoggedIn,
         login,
         logout,
-        user: {
-          name: "Kwame Mensah",
-          email: "kwame.mensah@example.com",
-          phone: "+233 20 123 4567",
-        },
+        user: DEFAULT_USER,
       }}
     >
       {children}

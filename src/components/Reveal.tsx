@@ -11,9 +11,26 @@ interface RevealProps {
 
 /**
  * Fades and slides content up gently when it enters the viewport.
+ * Uses a shared IntersectionObserver for efficiency.
  * Respects prefers-reduced-motion (handled in globals.css — content
  * is always visible and static for those users).
  */
+
+let sharedObserver: IntersectionObserver | null = null;
+const observedElements = new WeakSet<Element>();
+
+function getSharedObserver(
+  callback: IntersectionObserverCallback
+): IntersectionObserver {
+  if (!sharedObserver) {
+    sharedObserver = new IntersectionObserver(callback, {
+      threshold: 0.15,
+      rootMargin: "0px 0px -40px 0px",
+    });
+  }
+  return sharedObserver;
+}
+
 export function Reveal({ children, delay = 0, className = "" }: RevealProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -28,20 +45,28 @@ export function Reveal({ children, delay = 0, className = "" }: RevealProps) {
       return;
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
+    // Only create observer if not already observing this element
+    if (!observedElements.has(node)) {
+      const observer = getSharedObserver((entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setVisible(true);
             observer.unobserve(entry.target);
+            observedElements.delete(entry.target);
           }
         });
-      },
-      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
-    );
+      });
 
-    observer.observe(node);
-    return () => observer.disconnect();
+      observer.observe(node);
+      observedElements.add(node);
+
+      return () => {
+        if (observedElements.has(node)) {
+          observer.unobserve(node);
+          observedElements.delete(node);
+        }
+      };
+    }
   }, []);
 
   return (

@@ -8,25 +8,21 @@ import { LogoPulse } from "./LogoPulse";
  * logo beats in → app name → slogan, holds briefly, then the whole
  * overlay fades out and unmounts. Purely decorative (aria-hidden),
  * and kept short so it never blocks the task of ordering medication.
+ *
+ * Uses CSS class toggling instead of direct DOM manipulation to avoid
+ * layout thrashing and to respect the browser's paint cycle.
  */
 export function SplashScreen() {
   const [hiding, setHiding] = useState(false);
   const [gone, setGone] = useState(false);
 
   useEffect(() => {
-    // Lock scroll while the splash is visible
-    document.body.style.overflow = "hidden";
-
     const hideTimer = setTimeout(() => setHiding(true), 2100);
-    const goneTimer = setTimeout(() => {
-      setGone(true);
-      document.body.style.overflow = "";
-    }, 2700);
+    const goneTimer = setTimeout(() => setGone(true), 2700);
 
     return () => {
       clearTimeout(hideTimer);
       clearTimeout(goneTimer);
-      document.body.style.overflow = "";
     };
   }, []);
 

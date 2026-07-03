@@ -28,15 +28,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addToCart = useCallback((quantity: number = 1) => {
     setCount((c) => c + quantity);
 
-    // Restart the bounce animation cleanly even on rapid clicks
-    setIsBouncing(false);
+    // Simplified: reset bounce state and restart animation cleanly
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    // Next frame: re-add the class so the animation replays
+    
+    setIsBouncing(false);
+    // Single RAF batch instead of chained RAF calls
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setIsBouncing(true);
-        timeoutRef.current = setTimeout(() => setIsBouncing(false), 550);
-      });
+      setIsBouncing(true);
+      timeoutRef.current = setTimeout(() => setIsBouncing(false), 550);
     });
   }, []);
 

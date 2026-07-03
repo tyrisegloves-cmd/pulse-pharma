@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Product } from "@/lib/data";
 import { ShieldAlert, Check, ShoppingBag } from "lucide-react";
 import { useCart } from "@/components/CartContext";
@@ -11,10 +12,15 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <div className="motion-lift group border border-gray-200 rounded-xl overflow-hidden bg-white flex flex-col h-full transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:border-gray-300">
       <div className="relative h-48 bg-gray-50 flex items-center justify-center p-4">
-        <img 
-          src={product.imageUrl} 
-          alt={product.name} 
-          className="max-h-full object-contain group-hover:scale-105 transition-transform duration-300 rounded" 
+        <Image
+          src={product.imageUrl}
+          alt={product.name}
+          width={200}
+          height={200}
+          quality={75}
+          loading="lazy"
+          className="max-h-full object-contain group-hover:opacity-110 transition-opacity duration-300 rounded"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
         {product.isPrescriptionRequired && (
           <div className="absolute top-3 left-3 bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1">
@@ -45,10 +51,10 @@ export function ProductCard({ product }: { product: Product }) {
           <div className="font-bold text-xl text-gray-900">
             GH₵ {product.price.toFixed(2)}
           </div>
-          <button 
+          <button
             disabled={!product.inStock}
             onClick={() => addToCart(1)}
-            className="motion-press bg-gray-900 text-white p-2 rounded-lg hover:bg-red-600 transition-all duration-150 active:scale-90 disabled:opacity-50 disabled:hover:bg-gray-900 disabled:active:scale-100 flex items-center justify-center"
+            className="motion-press bg-gray-900 text-white p-2 rounded-lg hover:bg-red-600 transition-all duration-150 active:scale-90 disabled:opacity-50 disabled:hover:bg-gray-900 disabled:active:scale-100"
             aria-label={`Add ${product.name} to cart`}
           >
             <ShoppingBag size={20} />
