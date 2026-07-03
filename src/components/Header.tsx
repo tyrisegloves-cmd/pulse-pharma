@@ -2,16 +2,22 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ShoppingCart, User, Menu, LogIn } from "lucide-react";
+import { ShoppingCart, User, Menu, LogIn, ArrowLeft } from "lucide-react";
 import { useCart } from "@/components/CartContext";
 import { useAuth } from "@/components/AuthContext";
 import { LogoPulse } from "@/components/LogoPulse";
 import { LoginModal } from "@/components/LoginModal";
+import { useRouter, usePathname } from "next/navigation";
 
 export function Header() {
   const { count, isBouncing } = useCart();
   const { isLoggedIn } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Show back button on all pages except home
+  const showBackButton = pathname !== "/";
 
   return (
     <>
@@ -61,6 +67,22 @@ export function Header() {
         </div>
       </div>
       </header>
+
+      {/* Back Button Bar — appears on all pages except home */}
+      {showBackButton && (
+        <div className="sticky top-16 z-40 bg-gray-50 border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <button
+              onClick={() => router.back()}
+              className="inline-flex items-center gap-2 text-gray-600 hover:text-red-600 py-3 text-sm font-medium transition-colors group"
+              aria-label="Go back"
+            >
+              <ArrowLeft size={18} className="group-hover:translate-x-0.5 transition-transform" />
+              <span>Go Back</span>
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
