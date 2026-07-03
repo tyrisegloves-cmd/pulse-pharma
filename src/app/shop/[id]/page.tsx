@@ -1,13 +1,14 @@
 "use client";
 
 import { MOCK_PRODUCTS } from "@/lib/data";
-import { ShieldAlert, Check, Truck, Info, ArrowLeft, Heart, Share2, Star, Users, AlertCircle } from "lucide-react";
+import { ShieldAlert, Check, Truck, ArrowLeft, Heart, Share2, Star, AlertCircle } from "lucide-react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { AddToCartButton } from "@/components/AddToCartButton";
 import { useState } from "react";
 
 export default function ProductDetail({ params }: { params: { id: string } }) {
+  const router = useRouter();
   const product = MOCK_PRODUCTS.find(p => p.id === params.id);
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -16,7 +17,27 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
   const [showZoom, setShowZoom] = useState(false);
   
   if (!product) {
-    notFound();
+    return (
+      <div className="bg-white min-h-screen py-16 flex items-center justify-center">
+        <div className="max-w-md w-full mx-auto px-4 text-center">
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8">
+            <div className="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertCircle size={32} />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Product Not Found</h1>
+            <p className="text-gray-600 text-sm mb-6">
+              The product you're looking for doesn't exist or has been removed.
+            </p>
+            <Link 
+              href="/shop" 
+              className="inline-block bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+            >
+              Back to Shop
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Mock images array (main image + thumbnails)
@@ -57,9 +78,12 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
     <div className="bg-white min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <Link href="/shop" className="inline-flex items-center gap-2 text-gray-500 hover:text-red-600 mb-8 text-sm font-medium transition-colors">
-          <ArrowLeft size={16} /> Back to Shop
-        </Link>
+        <button 
+          onClick={() => router.back()}
+          className="inline-flex items-center gap-2 text-gray-500 hover:text-red-600 mb-8 text-sm font-medium transition-colors"
+        >
+          <ArrowLeft size={16} /> Go Back
+        </button>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           
