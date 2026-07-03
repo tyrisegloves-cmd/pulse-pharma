@@ -28,7 +28,7 @@ export default function Home() {
         {/* ── Background image ── */}
         <div className="absolute inset-0">
           <img
-            src="/images/hero-pharmacy.jpg"
+            src="/images/ChatGPT%20Image%20Jul%202%2C%202026%2C%2004_14_05%20PM.png"
             alt="Pulse Pharma pharmacist in white coat discussing medication with a customer at the counter"
             className="w-full h-full object-cover"
             style={{ objectPosition: '60% center' }}
@@ -239,9 +239,9 @@ export default function Home() {
               <Reveal key={idx} delay={idx * 60}>
                 <Link 
                   href={`/shop?category=${encodeURIComponent(cat)}`}
-                  className="motion-lift block h-full bg-gray-50 border border-gray-100 hover:border-red-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 rounded-xl p-6 text-center group"
+                  className="motion-lift block h-full bg-gray-50 border border-gray-100 hover:border-red-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 rounded-xl p-6 text[...]"
                 >
-                  <div className="w-12 h-12 mx-auto bg-white rounded-full flex items-center justify-center text-gray-400 group-hover:text-red-600 group-hover:bg-red-50 transition-colors mb-4 shadow-sm">
+                  <div className="w-12 h-12 mx-auto bg-white rounded-full flex items-center justify-center text-gray-400 group-hover:text-red-600 group-hover:bg-red-50 transition-colors mb-4 shad[...]">
                     {/* Just use a generic icon for prototype speed */}
                     <ShieldCheck size={20} />
                   </div>
