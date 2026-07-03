@@ -3,7 +3,6 @@ import { ArrowRight, Search, ShieldCheck, Clock, CheckCircle, FileText } from "l
 import { MOCK_PRODUCTS, CATEGORIES } from "@/lib/data";
 import { ProductCard } from "@/components/ProductCard";
 import { Reveal } from "@/components/Reveal";
-import { PharmacyShowcase } from "@/components/PharmacyShowcase";
 
 export default function Home() {
   const featuredProducts = MOCK_PRODUCTS.slice(0, 4);
@@ -275,9 +274,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Zoom parallax brand showcase */}
-      <PharmacyShowcase />
 
       {/* Prescription CTA */}
       <section className="py-20 bg-gray-900 text-white">
