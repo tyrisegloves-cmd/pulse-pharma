@@ -14,8 +14,13 @@
  *
  * Same Supabase project & env vars as before — no new project.
  *
- * Usage — import this wherever you need to talk to Supabase from the browser
- * or from a server component doing an anon (public) read:
+ * LAZY INITIALIZATION:
+ *   The client is created on first access, not at module-evaluation time.
+ *   This means the module can be imported safely even when env vars are not
+ *   set (e.g. during a Vercel build before env vars are configured), and the
+ *   error only surfaces when code actually tries to use the client.
+ *
+ * Usage — import this wherever you need to talk to Supabase:
  *   import { supabase } from '@/lib/supabase'
  *
  * Environment variables required in .env.local:
@@ -27,65 +32,61 @@
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-// ── 1. Read & validate environment variables ──────────────────────────────────
+/** Cached singleton — created once on first access. */
+let _client: SupabaseClient | null = null;
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl) {
-  throw new Error(
-    "[Supabase] Missing env var: NEXT_PUBLIC_SUPABASE_URL\n" +
-      "Add it to your .env.local file and restart the dev server."
+/**
+ * Build the env-var error message. Kept as a function so it's only called
+ * when the client is actually accessed (not at import time).
+ */
+function envError(name: string): Error {
+  return new Error(
+    `[Supabase] Missing env var: ${name}\n` +
+      "Add it to your .env.local file (and in Vercel → Settings → Environment Variables) and restart."
   );
 }
 
-if (!supabaseAnonKey) {
-  throw new Error(
-    "[Supabase] Missing env var: NEXT_PUBLIC_SUPABASE_ANON_KEY\n" +
-      "Add it to your .env.local file and restart the dev server."
-  );
-}
+/**
+ * Lazy-initialized, cookie-based Supabase browser client.
+ *
+ * The `get()` accessor defers `createBrowserClient` (and the env-var checks)
+ * until something actually reads `.supabase`. This prevents the module from
+ * crashing the build when env vars are not yet configured on the deploy
+ * platform — the error only surfaces at runtime when the client is used.
+ */
+export const supabase: SupabaseClient = new Proxy({} as SupabaseClient, {
+  get(_target, prop, receiver) {
+    if (!_client) {
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      if (!url) throw envError("NEXT_PUBLIC_SUPABASE_URL");
+      if (!key) throw envError("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+      _client = createBrowserClient(url, key, {
+        auth: {
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: true,
+        },
+      });
+    }
+    const value = Reflect.get(_client, prop, receiver);
+    // Bind methods so `supabase.auth.getUser()` works without manual binding.
+    if (typeof value === "function") return value.bind(_client);
+    return value;
+  },
+});
 
-// ── 2. Create the singleton browser client ────────────────────────────────────
-//
-// `createBrowserClient` wires up cookie storage automatically. The session is
-// persisted in cookies (readable by middleware) instead of localStorage, and
-// tokens are auto-refreshed. `detectSessionInUrl` is handled by @supabase/ssr
-// for OAuth / magic-link / password-reset redirects.
-
-export const supabase: SupabaseClient = createBrowserClient(
-  supabaseUrl,
-  supabaseAnonKey,
-  {
-    auth: {
-      // Persist in cookies so the server (middleware) can read the session.
-      // @supabase/ssr manages this internally — these flags keep the behavior
-      // equivalent to the old localStorage client (stay logged in + refresh).
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true,
-    },
-  }
-);
-
-// ── 3. Named helper — verify the connection is alive ─────────────────────────
-//
-// Call this once on app start (e.g. in a server action or API route) to confirm
-// that the credentials are correct and the project is reachable.
-//
-// Example:
-//   import { verifySupabaseConnection } from '@/lib/supabase'
-//   await verifySupabaseConnection()
-
+/**
+ * Named helper — verify the connection is alive.
+ *
+ * Call this once on app start (e.g. in a server action or API route) to confirm
+ * that the credentials are correct and the project is reachable.
+ */
 export async function verifySupabaseConnection(): Promise<void> {
-  // `getSession` is a lightweight auth-only call — it does not hit your DB tables
-  // and works even if you have no tables yet.
   const { error } = await supabase.auth.getSession();
-
   if (error) {
     console.error("[Supabase] Connection check failed:", error.message);
     throw new Error(`Supabase connection error: ${error.message}`);
   }
-
-  console.log("[Supabase] ✅ Connected successfully to", supabaseUrl);
+  console.log("[Supabase] ✅ Connected successfully");
 }

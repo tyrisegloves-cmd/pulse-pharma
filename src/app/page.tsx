@@ -17,6 +17,15 @@ import { getCategoryIcon } from "@/lib/categoryIcons";
    Each category has both a real photo (with the name baked in as a caption,
    sliced from the supplied category composite) and a matching accent icon
    used as a small badge on the card. ───────────────────────────────────── */
+
+// This page fetches live product data from Supabase on every request, so it
+// must render dynamically. Without this, Next tries to statically prerender it
+// at build time — which executes the Supabase query during the build. If the
+// env vars aren't available at build time (e.g. on Vercel before they're set,
+// or when the DB isn't reachable from the build environment), prerendering
+// throws and the whole build fails. force-dynamic moves that fetch to runtime.
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   // Fetch live data from Supabase in parallel
   const medicinesResult = await getAllMedicines({ limit: 4, sortBy: "newest" });

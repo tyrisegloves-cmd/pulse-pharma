@@ -30,20 +30,21 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  * Returns a real `string` (never undefined) so downstream code — including code
  * inside async closures, where `process.env` narrowing would otherwise be lost —
  * type-checks without non-null assertions.
+ *
+ * IMPORTANT: call this inside the async `createServerClient()` body, NOT at
+ * module top-level. Top-level execution runs at import time and would crash the
+ * build when env vars aren't configured (e.g. on Vercel before they're set).
  */
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
     throw new Error(
       `[Supabase] Missing env var: ${name}\n` +
-        "Add it to your .env.local file and restart the dev server."
+        "Add it to your .env.local file (and in Vercel → Settings → Environment Variables) and restart."
     );
   }
   return value;
 }
-
-const supabaseUrl = requireEnv("NEXT_PUBLIC_SUPABASE_URL");
-const supabaseAnonKey = requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
 
 /**
  * Build a Supabase client bound to the current request's cookies.
@@ -53,6 +54,10 @@ const supabaseAnonKey = requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
  * browser and the next server request stay in sync.
  */
 export async function createServerClient(): Promise<SupabaseClient> {
+  // Read env vars HERE (not at module top-level) so this module can be imported
+  // during a build that has no env vars configured without crashing.
+  const supabaseUrl = requireEnv("NEXT_PUBLIC_SUPABASE_URL");
+  const supabaseAnonKey = requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
   const cookieStore = await cookies();
 
   return createSSRClient(supabaseUrl, supabaseAnonKey, {
