@@ -1,11 +1,7 @@
 -- ─────────────────────────────────────────────────────────────────────────────
--- ⚠️  DEPRECATED — this file is kept for reference only.
--- The canonical, versioned migration now lives at:
---     supabase/migrations/20260729_profiles_and_rls.sql
--- Apply it via:  supabase db push
--- Or paste it into the Supabase SQL Editor.
--- ─────────────────────────────────────────────────────────────────────────────
 -- Pulse Pharma — profiles table + signup trigger + Row Level Security
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Run this ONCE in the Supabase SQL editor (Dashboard → SQL → New query).
 -- It is IDEMPOTENT — safe to re-run; existing rows/policies are preserved.
 --
 -- What this does:

@@ -1,0 +1,19 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Supabase CLI configuration
+# ─────────────────────────────────────────────────────────────────────────────
+# After cloning the repo, link to your remote project:
+#   supabase link --project-ref bjqkpiffgwxqtgyidqwv
+#
+# Then push all migrations to the remote database:
+#   supabase db push
+#
+# To create a new migration:
+#   supabase migration new describe_your_change
+#   # ... edit the generated .sql file ...
+#   supabase db push
+# ─────────────────────────────────────────────────────────────────────────────
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
