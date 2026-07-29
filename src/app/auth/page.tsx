@@ -683,6 +683,32 @@ function AuthPageInner() {
                 </div>
               </div>
 
+              {/* confirm password */}
+              <div>
+                <label style={s.label}>Confirm Password</label>
+                <div style={s.inputWrap}>
+                  <span style={s.inputIcon}><Lock size={16} /></span>
+                  <input
+                    id="signup-confirm-password"
+                    type={showConfirmPass ? "text" : "password"}
+                    value={suConfirmPass}
+                    onChange={(e) => setSuConfirmPass(e.target.value)}
+                    required
+                    autoComplete="new-password"
+                    style={{ ...s.input, ...s.inputWithPadRight }}
+                    placeholder="Re-enter your password"
+                  />
+                  <button
+                    type="button"
+                    style={s.eyeBtn}
+                    onClick={() => setShowConfirmPass((p) => !p)}
+                    aria-label="Toggle confirm password visibility"
+                  >
+                    {showConfirmPass ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+
               <button type="submit" disabled={loading} style={s.submitBtn(loading)}>
                 {loading ? <><Spinner /> Creating Account…</> : <>Create Account <ArrowRight size={16} /></>}
               </button>
