@@ -234,11 +234,27 @@ const s = {
     background: "linear-gradient(135deg, #dc2626, #b91c1c)",
     border: "none",
     cursor: disabled ? "not-allowed" : "pointer",
-    opacity: disabled ? 0.65 : 1,
+    opacity: disabled ? 0.85 : 1,
     boxShadow: "0 8px 20px -6px rgba(220,38,38,0.45)",
     marginTop: "0.25rem",
+    position: "relative" as const,
+    overflow: "hidden" as const,
     transition: "box-shadow 0.2s, transform 0.15s, opacity 0.2s",
   }),
+
+  // Translucent highlight that sweeps across the button while loading.
+  shimmer: {
+    position: "absolute" as const,
+    top: 0,
+    left: 0,
+    bottom: 0,
+    width: "45%",
+    background:
+      "linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)",
+    transform: "skewX(-20deg)",
+    animation: "pp-shimmer 1.1s ease-in-out infinite",
+    pointerEvents: "none" as const,
+  } as React.CSSProperties,
 
   switchText: {
     textAlign: "center" as const,
@@ -368,17 +384,27 @@ function AuthPageInner() {
       return;
     }
 
+    const startedAt = Date.now();
     setLoading(true);
 
     const { error } = await signIn({ email: siEmail, password: siPass });
 
+    const elapsed = Date.now() - startedAt;
+    if (elapsed < 700) {
+      await new Promise((r) => setTimeout(r, 700 - elapsed));
+    }
+
     if (error) {
-      // Friendly message for the most common failure (wrong credentials).
-      const msg =
-        error.message.toLowerCase().includes("invalid login") ||
-        error.message.toLowerCase().includes("invalid credentials")
-          ? "Incorrect email or password. Please try again."
-          : error.message;
+      const lower = (error.message || "").toLowerCase();
+      // Friendly message for the most common failures.
+      let msg: string;
+      if (lower.includes("invalid login") || lower.includes("invalid credentials")) {
+        msg = "Incorrect email or password. Please try again.";
+      } else if (!error.message || error.message.trim() === "{}") {
+        msg = "We couldn't sign you in right now. Please try again in a moment.";
+      } else {
+        msg = error.message;
+      }
       setFeedback({ type: "error", message: msg });
       setLoading(false);
       return;
@@ -417,6 +443,10 @@ function AuthPageInner() {
       return;
     }
 
+    // Record start time so we can keep the loading state visible long enough
+    // for the animation to register — without this, a fast failure flashes the
+    // spinner for a few ms and looks like "nothing happened".
+    const startedAt = Date.now();
     setLoading(true);
 
     const { error } = await signUp({
@@ -426,8 +456,25 @@ function AuthPageInner() {
       phone: suPhone,
     });
 
+    // Hold the spinner for at least 700ms regardless of how fast this resolved.
+    const elapsed = Date.now() - startedAt;
+    if (elapsed < 700) {
+      await new Promise((r) => setTimeout(r, 700 - elapsed));
+    }
+
     if (error) {
-      setFeedback({ type: "error", message: error.message });
+      // Supabase sometimes surfaces a server-side failure (e.g. HTTP 500
+      // "Database error saving new user") as a near-empty AuthError whose
+      // `.message` stringifies to "{}". Fall back to a clear, actionable
+      // message so the user isn't shown a literal "{}".
+      const raw =
+        error.message && error.message.trim() && error.message.trim() !== "{}"
+          ? error.message.trim()
+          : "";
+      const msg =
+        raw ||
+        "We couldn't create your account right now. This is usually temporary — please try again in a moment.";
+      setFeedback({ type: "error", message: msg });
       setLoading(false);
       return;
     }
@@ -476,7 +523,13 @@ function AuthPageInner() {
 
   return (
     <div style={s.root}>
-      <style>{`@keyframes pp-spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes pp-spin { to { transform: rotate(360deg); } }
+        @keyframes pp-shimmer {
+          0%   { transform: translateX(-160%) skewX(-20deg); }
+          100% { transform: translateX(320%) skewX(-20deg); }
+        }
+      `}</style>
 
       {/* decorative blob */}
       <div style={s.blob} />
@@ -584,6 +637,7 @@ function AuthPageInner() {
               </div>
 
               <button type="submit" disabled={loading} style={s.submitBtn(loading)}>
+                {loading && <span style={s.shimmer} aria-hidden="true" />}
                 {loading ? <><Spinner /> Signing In…</> : <>Sign In <ArrowRight size={16} /></>}
               </button>
 
@@ -710,6 +764,7 @@ function AuthPageInner() {
               </div>
 
               <button type="submit" disabled={loading} style={s.submitBtn(loading)}>
+                {loading && <span style={s.shimmer} aria-hidden="true" />}
                 {loading ? <><Spinner /> Creating Account…</> : <>Create Account <ArrowRight size={16} /></>}
               </button>
 
