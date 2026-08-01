@@ -117,16 +117,16 @@ export default function Account() {
                 <p className="text-sm text-gray-500">{user?.email}</p>
               </div>
               <nav className="p-2">
-                <Link href="#" className="flex items-center gap-3 px-4 py-3 text-red-600 bg-red-50 rounded-lg font-medium">
+                <Link href="/account" className="flex items-center gap-3 px-4 py-3 text-red-600 bg-red-50 rounded-lg font-medium">
                   <Package size={20} /> Order History
                 </Link>
                 <Link href="/upload-prescription" className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg font-medium transition-colors">
                   <FileText size={20} /> Prescriptions
                 </Link>
-                <Link href="#" className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg font-medium transition-colors">
+                <Link href="/account/refill-reminders" className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg font-medium transition-colors">
                   <Bell size={20} /> Refill Reminders
                 </Link>
-                <Link href="#" className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg font-medium transition-colors">
+                <Link href="/account/settings" className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg font-medium transition-colors">
                   <Settings size={20} /> Settings
                 </Link>
                 <div className="my-2 border-t border-gray-100"></div>

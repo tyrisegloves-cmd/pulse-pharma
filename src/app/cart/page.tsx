@@ -1,39 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import type { Medicine } from "@/services/types";
 import { Trash2, ArrowRight, ShieldCheck, MapPin, Clock, CreditCard, ShoppingCart, LogIn } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthContext";
+import { useCart } from "@/components/CartContext";
 
 export default function Cart() {
   const router = useRouter();
   const { isLoggedIn, isLoading: isAuthLoading } = useAuth();
+  const { items: cartItems, updateQuantity, removeFromCart } = useCart();
   const [step, setStep] = useState(1); // 1: Cart, 2: Delivery, 3: Payment
-  const [cartItems, setCartItems] = useState<{ product: Medicine; quantity: number }[]>([]);
-
-  // Cart is populated when users click "Add to Cart" on product pages.
-  // No mock data — starts empty.
 
   const subtotal = cartItems.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
   const deliveryFee = 15.00;
   const total = subtotal + deliveryFee;
 
-  const handleRemove = (id: string) => {
-    setCartItems(cartItems.filter(item => item.product.id !== id));
-  };
-
-  const updateQuantity = (id: string, delta: number) => {
-    setCartItems(cartItems.map(item => {
-      if (item.product.id === id) {
-        const newQ = item.quantity + delta;
-        return { ...item, quantity: newQ > 0 ? newQ : 1 };
-      }
-      return item;
-    }));
-  };
+  const handleRemove = (id: string) => removeFromCart(id);
 
   const placeOrder = () => {
     // Simulate order placement
