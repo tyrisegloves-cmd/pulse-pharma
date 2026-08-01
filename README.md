@@ -94,6 +94,40 @@ repo and can cause hard-to-debug issues (e.g. recursive RLS policies breaking
 signups).
 
 ---
+Here's how to commit and push files in **Visual Studio Code**:
+
+### Step-by-step
+
+1. **Open the Source Control panel**
+   - Click the **branch icon** in the left sidebar (or press `Ctrl+Shift+G`)
+
+2. **Stage your changes**
+   - You'll see your changed/new files listed under **Changes**
+   - Click the **+** icon next to each file to stage it (or hover over "Changes" and click **+** to stage all)
+
+3. **Write a commit message**
+   - At the top of the Source Control panel, type a message in the **"Message"** input box
+   - e.g. `feat: add new settings page`
+
+4. **Commit**
+   - Click the **✓ checkmark button** (or press `Ctrl+Enter`) to commit
+
+5. **Push to GitHub**
+   - Click the **"..."** (more actions) button at the top of the Source Control panel
+   - Select **Push** (or click the sync icon ↑↓ at the bottom status bar)
+
+### Keyboard shortcuts
+
+| Action | Shortcut |
+|--------|----------|
+| Open Source Control | `Ctrl+Shift+G` |
+| Commit all | `Ctrl+Enter` |
+| Push | Click ↑↓ in the bottom-right status bar |
+
+### Quick tips
+- If you see **"Publish Branch"** instead of Push, it means your branch hasn't been pushed yet — click that to push it to GitHub.
+- The **bottom status bar** shows your current branch name — click it to switch branches or create new ones.
+- If there are merge conflicts, VS Code will highlight them and let you resolve them inline.
 
 ## Project Structure
 
