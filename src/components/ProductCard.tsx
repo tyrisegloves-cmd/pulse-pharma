@@ -60,7 +60,7 @@ export function ProductCard({ product }: { product: Product }) {
           </div>
           <button
             disabled={!product.inStock}
-            onClick={() => addToCart(1)}
+            onClick={() => addToCart(product, 1)}
             className="motion-press bg-gray-900 text-white p-2 rounded-lg hover:bg-red-600 transition-all duration-150 active:scale-90 disabled:opacity-50 disabled:hover:bg-gray-900"
             aria-label={`Add ${product.name} to cart`}
           >

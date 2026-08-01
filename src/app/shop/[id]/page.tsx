@@ -340,7 +340,7 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
                   +
                 </button>
               </div>
-              <AddToCartButton inStock={product.inStock} />
+              <AddToCartButton product={product} quantity={quantity} />
             </div>
 
             {/* Action Buttons */}
