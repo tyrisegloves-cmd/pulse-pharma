@@ -1,0 +1,87 @@
+<!-- Vector favicon designed for Pulse Pharmacy
+     - Primary red: #E53935
+     - White cross with integrated ECG pulse
+     - Rounded-square background with subtle gradient & soft shadow
+     - Transparent canvas outside the rounded-square for flexible use
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="Pulse Pharmacy favicon">
+  <defs>
+    <!-- Background gradient (includes the requested #E53935) -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FF6B6B" />    <!-- subtle lighter top -->
+      <stop offset="45%" stop-color="#E53935" />   <!-- exact primary red -->
+      <stop offset="100%" stop-color="#B71C1C" />  <!-- deeper bottom -->
+    </linearGradient>
+
+    <!-- Soft drop shadow for subtle depth -->
+    <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feOffset in="SourceAlpha" dx="0" dy="18" result="off"/>
+      <feGaussianBlur in="off" stdDeviation="28" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0" result="shadow"/>
+      <feBlend in="shadow" in2="SourceGraphic" mode="normal"/>
+    </filter>
+
+    <!-- Slight top highlight to give premium sheen -->
+    <linearGradient id="highlight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.00"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Transparent background beyond the rounded icon (keeps canvas transparent) -->
+  <rect width="1024" height="1024" fill="transparent"/>
+
+  <!-- Rounded-square app background -->
+  <g filter="url(#softShadow)">
+    <rect x="88" y="88" width="848" height="848" rx="200" ry="200" fill="url(#bgGrad)"/>
+  </g>
+
+  <!-- Subtle curved highlight on top-right of the rounded square for premium feel -->
+  <path d="M856 176
+           C760 176, 640 220, 540 300
+           C460 364, 380 440, 260 520
+           C300 480, 420 420, 520 380
+           C640 336, 768 312, 856 312
+           " fill="none" stroke="url(#highlight)" stroke-width="36" stroke-linecap="round" opacity="0.18" />
+
+  <!-- White medical cross composed of two rounded rectangles for crisp, geometric proportions -->
+  <g fill="#FFFFFF">
+    <!-- Vertical bar -->
+    <rect x="432" y="236" width="160" height="552" rx="48" ry="48"/>
+    <!-- Horizontal bar -->
+    <rect x="236" y="432" width="552" height="160" rx="48" ry="48"/>
+  </g>
+
+  <!-- ECG heartbeat line integrated across the center.
+       Use a bold stroke so it remains legible at small sizes.
+       Stroke color is the primary red to keep the two-color palette. -->
+  <path
+    d="
+      M 176 512
+      L 312 512
+      L 362 512
+      L 398 512
+      L 428 452
+      L 468 596
+      L 520 420
+      L 570 512
+      L 624 512
+      L 848 512
+    "
+    fill="none"
+    stroke="#E53935"
+    stroke-width="60"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    vector-effect="non-scaling-stroke"
+  />
+
+  <!-- Rounded clip so the heartbeat doesn't overflow the rounded background in edge cases -->
+  <clipPath id="roundedClip">
+    <rect x="88" y="88" width="848" height="848" rx="200" ry="200"/>
+  </clipPath>
+  <g clip-path="url(#roundedClip)">
+    <!-- a thin white inner ring accent (very subtle) -->
+    <path d="M192 512 A320 320 0 1 1 832 512" fill="none" stroke="#FFFFFF" stroke-width="14" opacity="0.06" stroke-linecap="round"/>
+  </g>
+</svg>
