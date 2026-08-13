@@ -16,7 +16,10 @@ export const metadata: Metadata = {
   title: "Pulse Pharma | Your Trusted Online Pharmacy in Accra",
   description: "Retail pharmacy and drug delivery e-health platform based in Accra, Ghana.",
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+    ],
     apple: "/apple-icon.png",
   },
 };
