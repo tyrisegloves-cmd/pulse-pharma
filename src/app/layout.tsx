@@ -15,6 +15,10 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Pulse Pharma | Your Trusted Online Pharmacy in Accra",
   description: "Retail pharmacy and drug delivery e-health platform based in Accra, Ghana.",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({
