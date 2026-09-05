@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { useCart } from "@/components/CartContext";
 import { LogoPulse } from "@/components/LogoPulse";
+import { supabase } from "@/lib/supabase";
 
 type Outcome =
   | { kind: "verifying" }
@@ -68,7 +69,21 @@ function CallbackInner() {
   const verify = useCallback(async () => {
     if (!reference) return;
     try {
-      const res = await fetch(`/api/payments/verify?reference=${encodeURIComponent(reference)}`);
+      // Returning from Paystack's redirect, the stored access token may have
+      // just expired — getUser() forces the browser client to refresh it so
+      // the server call below carries a valid session cookie.
+      await supabase.auth.getUser();
+      let res = await fetch(
+        `/api/payments/verify?reference=${encodeURIComponent(reference)}`
+      );
+      if (res.status === 401) {
+        // One automatic retry after an explicit refresh round-trip.
+        await supabase.auth.refreshSession();
+        await new Promise((resolve) => setTimeout(resolve, 600));
+        res = await fetch(
+          `/api/payments/verify?reference=${encodeURIComponent(reference)}`
+        );
+      }
       const data = (await res.json()) as {
         status?: string;
         orderId?: string;
