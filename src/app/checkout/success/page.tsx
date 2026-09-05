@@ -12,7 +12,7 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Banknote, Package, ShoppingBag, Loader2, AlertCircle } from "lucide-react";
+import { Banknote, Package, ShoppingBag, Loader2, AlertCircle, FileText } from "lucide-react";
 import { getOrderById, type Order } from "@/services/orders";
 import { LogoPulse } from "@/components/LogoPulse";
 
@@ -112,8 +112,14 @@ function SuccessInner() {
 
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <Link
-          href={`/track/${orderId}`}
+          href={`/orders/${orderId}/receipt`}
           className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+        >
+          <FileText size={18} /> View Receipt
+        </Link>
+        <Link
+          href={`/track/${orderId}`}
+          className="bg-gray-900 hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           <Package size={18} /> Track Order
         </Link>

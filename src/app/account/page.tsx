@@ -224,6 +224,12 @@ export default function Account() {
                           GH₵ {order.totalAmount.toFixed(2)}
                         </div>
                         <Link
+                          href={`/orders/${order.id}/receipt`}
+                          className="border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium hover:border-gray-300 hover:text-gray-900 transition-colors"
+                        >
+                          Receipt
+                        </Link>
+                        <Link
                           href={`/track/${order.id}`}
                           className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
                         >
