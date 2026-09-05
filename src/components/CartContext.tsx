@@ -11,10 +11,22 @@ import {
   type ReactNode,
 } from "react";
 import type { Medicine } from "@/services/types";
+import { CartToast } from "@/components/CartToast";
 
 export interface CartItem {
   product: Medicine;
   quantity: number;
+}
+
+/** One add-to-cart event, consumed by the CartToast notification */
+export interface CartNotification {
+  /** Monotonic key so repeat adds re-trigger the toast animation */
+  key: number;
+  product: Medicine;
+  /** Total quantity of this product now in the cart */
+  totalInCart: number;
+  /** True when the product was already in the cart (quantity merged) */
+  wasAlreadyInCart: boolean;
 }
 
 interface CartContextValue {
@@ -22,7 +34,7 @@ interface CartContextValue {
   items: CartItem[];
   /** Sum of all line quantities — drives the header badge */
   count: number;
-  /** Add a product (merges quantity if already in the cart) and bounce the badge */
+  /** Add a product (merges quantity if already in the cart), bounce the badge and raise a toast */
   addToCart: (product: Medicine, quantity?: number) => void;
   /** Replace the quantity of a line, removing it if quantity hits 0 */
   updateQuantity: (id: string, delta: number) => void;
@@ -32,10 +44,15 @@ interface CartContextValue {
   clearCart: () => void;
   /** True briefly after an item is added — used to run the bounce animation */
   isBouncing: boolean;
+  /** Most recent add-to-cart event, or null when the toast is hidden */
+  notification: CartNotification | null;
+  /** Hide the add-to-cart toast */
+  dismissNotification: () => void;
 }
 
 const STORAGE_KEY = "pulse-cart";
 const BOUNCE_MS = 550;
+export const NOTIFICATION_MS = 3200;
 
 const CartContext = createContext<CartContextValue | null>(null);
 
@@ -44,7 +61,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // hydration mismatches; hydrate from localStorage in the effect below.
   const [items, setItems] = useState<CartItem[]>([]);
   const [isBouncing, setIsBouncing] = useState(false);
+  const [notification, setNotification] = useState<CartNotification | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const notifTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const notifKeyRef = useRef(0);
   const [hydrated, setHydrated] = useState(false);
 
   // Load any persisted cart once on mount.
@@ -83,8 +103,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const dismissNotification = useCallback(() => {
+    if (notifTimeoutRef.current) clearTimeout(notifTimeoutRef.current);
+    setNotification(null);
+  }, []);
+
   const addToCart = useCallback(
     (product: Medicine, quantity: number = 1) => {
+      const existing = items.find((i) => i.product.id === product.id);
       setItems((prev) => {
         const existing = prev.find((i) => i.product.id === product.id);
         if (existing) {
@@ -96,10 +122,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
         return [...prev, { product, quantity }];
       });
+      notifKeyRef.current += 1;
+      setNotification({
+        key: notifKeyRef.current,
+        product,
+        totalInCart: (existing?.quantity ?? 0) + quantity,
+        wasAlreadyInCart: Boolean(existing),
+      });
       triggerBounce();
     },
-    [triggerBounce]
+    [items, triggerBounce]
   );
+
+  // Auto-dismiss the toast shortly after each add.
+  useEffect(() => {
+    if (!notification) return;
+    notifTimeoutRef.current = setTimeout(
+      () => setNotification(null),
+      NOTIFICATION_MS
+    );
+    return () => {
+      if (notifTimeoutRef.current) clearTimeout(notifTimeoutRef.current);
+    };
+  }, [notification]);
 
   const updateQuantity = useCallback((id: string, delta: number) => {
     setItems((prev) =>
@@ -133,9 +178,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeFromCart,
         clearCart,
         isBouncing,
+        notification,
+        dismissNotification,
       }}
     >
       {children}
+      <CartToast notification={notification} onDismiss={dismissNotification} />
     </CartContext.Provider>
   );
 }
