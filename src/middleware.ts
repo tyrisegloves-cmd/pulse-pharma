@@ -27,7 +27,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 /** Routes that REQUIRE an authenticated user. */
-const PROTECTED_PREFIXES = ["/account", "/cart", "/track"];
+const PROTECTED_PREFIXES = ["/account", "/cart", "/track", "/orders"];
 
 /** Auth-flow routes — signed-in users are bounced away from these. */
 const AUTH_PREFIX = "/auth";

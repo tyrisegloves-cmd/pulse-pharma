@@ -25,6 +25,7 @@ import {
   ShoppingBag,
   RotateCcw,
   LogIn,
+  FileText,
 } from "lucide-react";
 import { useCart } from "@/components/CartContext";
 import { LogoPulse } from "@/components/LogoPulse";
@@ -185,8 +186,14 @@ function CallbackInner() {
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link
-                  href={`/track/${outcome.orderId}`}
+                  href={`/orders/${outcome.orderId}/receipt`}
                   className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <FileText size={18} /> View Receipt
+                </Link>
+                <Link
+                  href={`/track/${outcome.orderId}`}
+                  className="bg-gray-900 hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
                   <Package size={18} /> Track Order
                 </Link>

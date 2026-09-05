@@ -140,11 +140,20 @@ export async function GET(request: NextRequest) {
       console.warn("[payments/verify] payment update race (likely webhook won):", paymentUpdateError);
     }
 
-    await service
+    const { error: orderUpdateError } = await service
       .from("orders")
       .update({ status: "confirmed", updated_at: nowIso })
       .eq("id", paymentRow.order_id)
       .eq("status", "pending");
+
+    if (orderUpdateError) {
+      // Never silent: a blocked status flip leaves a paid order stuck in
+      // pending (e.g. a legacy status check constraint rejecting 'confirmed').
+      console.error(
+        "[payments/verify] order status update failed:",
+        orderUpdateError
+      );
+    }
 
     return Response.json({
       status: "success",

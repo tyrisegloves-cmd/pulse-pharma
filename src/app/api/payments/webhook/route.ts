@@ -101,11 +101,18 @@ export async function POST(request: NextRequest) {
     // fulfillment stage (processing/shipped/delivered) if we're late.
     const orderId = event.data.metadata?.order_id;
     if (orderId) {
-      await service
+      const { error: orderUpdateError } = await service
         .from("orders")
         .update({ status: "confirmed", updated_at: nowIso })
         .eq("id", orderId)
         .eq("status", "pending");
+
+      if (orderUpdateError) {
+        console.error(
+          "[payments/webhook] order status update failed:",
+          orderUpdateError
+        );
+      }
     } else {
       console.error(`[payments/webhook] charge.success without order_id metadata: ref=${reference}`);
     }
