@@ -34,7 +34,8 @@ interface CartContextValue {
   items: CartItem[];
   /** Sum of all line quantities — drives the header badge */
   count: number;
-  /** Add a product (merges quantity if already in the cart), bounce the badge and raise a toast */
+  /** Add a product to the cart. If it's already there the quantity is left
+      untouched — quantities are only adjusted from the cart (checkout). */
   addToCart: (product: Medicine, quantity?: number) => void;
   /** Replace the quantity of a line, removing it if quantity hits 0 */
   updateQuantity: (id: string, delta: number) => void;
@@ -111,22 +112,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addToCart = useCallback(
     (product: Medicine, quantity: number = 1) => {
       const existing = items.find((i) => i.product.id === product.id);
-      setItems((prev) => {
-        const existing = prev.find((i) => i.product.id === product.id);
-        if (existing) {
-          return prev.map((i) =>
-            i.product.id === product.id
-              ? { ...i, quantity: i.quantity + quantity }
-              : i
-          );
-        }
-        return [...prev, { product, quantity }];
-      });
+      // Adding a product that's already in the cart never stacks quantity —
+      // the toast just reminds the user, and they adjust units in the cart.
+      // The .some() guard inside keeps the append idempotent against
+      // double-clicks landing before the next render commits.
+      setItems((prev) =>
+        prev.some((i) => i.product.id === product.id)
+          ? prev
+          : [...prev, { product, quantity }]
+      );
       notifKeyRef.current += 1;
       setNotification({
         key: notifKeyRef.current,
         product,
-        totalInCart: (existing?.quantity ?? 0) + quantity,
+        totalInCart: existing?.quantity ?? quantity,
         wasAlreadyInCart: Boolean(existing),
       });
       triggerBounce();

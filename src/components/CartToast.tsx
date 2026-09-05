@@ -13,8 +13,9 @@ interface CartToastProps {
 
 /**
  * Global add-to-cart confirmation toast, rendered by CartProvider so it
- * appears on every page. Distinguishes a fresh add from a quantity merge
- * so users don't re-click and unknowingly stack duplicates.
+ * appears on every page. When the product is already in the cart it tells
+ * the user instead of stacking quantity — quantities are adjusted in the
+ * cart at checkout.
  */
 export function CartToast({ notification, onDismiss }: CartToastProps) {
   return (
@@ -40,16 +41,18 @@ export function CartToast({ notification, onDismiss }: CartToastProps) {
               <div className="min-w-0 flex-grow">
                 <p className="text-sm font-bold text-gray-900">
                   {notification.wasAlreadyInCart
-                    ? "Already in cart — quantity updated"
+                    ? "Already in your cart"
                     : "Added to cart"}
                 </p>
                 <p className="mt-0.5 truncate text-sm text-gray-600">
                   {notification.product.name}
                 </p>
                 <p className="mt-0.5 text-xs font-medium text-gray-500">
-                  {notification.totalInCart}{" "}
-                  {notification.totalInCart === 1 ? "unit" : "units"} in your
-                  cart
+                  {notification.wasAlreadyInCart
+                    ? `Quantity: ${notification.totalInCart} — adjust it in your cart`
+                    : `${notification.totalInCart} ${
+                        notification.totalInCart === 1 ? "unit" : "units"
+                      } in your cart`}
                 </p>
               </div>
               <Link
