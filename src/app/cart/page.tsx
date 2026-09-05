@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2, ArrowRight, ShieldCheck, MapPin, Clock, CreditCard, ShoppingCart, LogIn } from "lucide-react";
+import { Trash2, ArrowRight, ShieldCheck, MapPin, Clock, CreditCard, ShoppingCart, LogIn, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,9 +11,17 @@ import { useCart } from "@/components/CartContext";
 export default function Cart() {
   const router = useRouter();
   const { isLoggedIn, isLoading: isAuthLoading } = useAuth();
-  const { items: cartItems, updateQuantity, removeFromCart } = useCart();
+  const { items: cartItems, updateQuantity, removeFromCart, clearCart } = useCart();
   const [step, setStep] = useState(1); // 1: Cart, 2: Delivery, 3: Payment
   const [paymentMethod, setPaymentMethod] = useState<"paystack" | "cod">("paystack");
+  const [delivery, setDelivery] = useState({ fullName: "", phone: "", address: "" });
+  const [deliveryErrors, setDeliveryErrors] = useState<{
+    fullName?: string;
+    phone?: string;
+    address?: string;
+  }>({});
+  const [placing, setPlacing] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
 
   const subtotal = cartItems.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
   const deliveryFee = 15.00;
@@ -21,9 +29,77 @@ export default function Cart() {
 
   const handleRemove = (id: string) => removeFromCart(id);
 
-  const placeOrder = () => {
-    // Simulate order placement
-    router.push("/track/12345");
+  const handleDeliveryChange =
+    (field: keyof typeof delivery) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setDelivery((d) => ({ ...d, [field]: e.target.value }));
+      setDeliveryErrors((prev) => ({ ...prev, [field]: undefined }));
+    };
+
+  const goToStep = (next: number) => {
+    setOrderError(null);
+    // Delivery details must be complete before moving to payment.
+    if (step === 2 && next === 3) {
+      const errors: typeof deliveryErrors = {};
+      if (!delivery.fullName.trim()) errors.fullName = "Please enter your full name.";
+      if (!delivery.phone.trim()) {
+        errors.phone = "Please enter your phone number.";
+      } else if (delivery.phone.replace(/\D/g, "").length < 9) {
+        errors.phone = "Please enter a valid phone number.";
+      }
+      if (!delivery.address.trim()) errors.address = "Please enter your delivery address.";
+      if (Object.keys(errors).length > 0) {
+        setDeliveryErrors(errors);
+        return;
+      }
+    }
+    setStep(next);
+  };
+
+  const placeOrder = async () => {
+    if (placing || cartItems.length === 0) return;
+    setPlacing(true);
+    setOrderError(null);
+    try {
+      const res = await fetch("/api/checkout/initialize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: cartItems.map((item) => ({
+            productId: item.product.id,
+            quantity: item.quantity,
+          })),
+          delivery,
+          paymentMethod,
+        }),
+      });
+      const data = (await res.json()) as {
+        mode?: string;
+        orderId?: string;
+        authorizationUrl?: string;
+        error?: string;
+      };
+      if (!res.ok) throw new Error(data.error ?? "Checkout failed. Please try again.");
+
+      if (data.mode === "redirect" && data.authorizationUrl) {
+        // Hand off to Paystack's hosted checkout. The cart is cleared by
+        // /checkout/callback once the payment is verified.
+        window.location.href = data.authorizationUrl;
+        return;
+      }
+      if (data.mode === "cod" && data.orderId) {
+        clearCart();
+        router.push(`/checkout/success?order=${data.orderId}`);
+        return;
+      }
+      throw new Error("Unexpected checkout response.");
+    } catch (error) {
+      setOrderError(
+        error instanceof Error ? error.message : "Something went wrong. Please try again."
+      );
+    } finally {
+      setPlacing(false);
+    }
   };
 
   // Cart requires a signed-in user. While Supabase restores the session we
@@ -142,15 +218,48 @@ export default function Cart() {
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                    <input type="text" className="w-full border border-gray-300 rounded-lg p-3 focus:ring-red-500 focus:border-red-500" placeholder="Kwame Mensah" />
+                    <input
+                      type="text"
+                      value={delivery.fullName}
+                      onChange={handleDeliveryChange("fullName")}
+                      className={`w-full border rounded-lg p-3 focus:ring-red-500 focus:border-red-500 ${
+                        deliveryErrors.fullName ? "border-red-400 bg-red-50/40" : "border-gray-300"
+                      }`}
+                      placeholder="Kwame Mensah"
+                    />
+                    {deliveryErrors.fullName && (
+                      <p className="mt-1 text-xs text-red-600">{deliveryErrors.fullName}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                    <input type="tel" className="w-full border border-gray-300 rounded-lg p-3 focus:ring-red-500 focus:border-red-500" placeholder="020 123 4567" />
+                    <input
+                      type="tel"
+                      value={delivery.phone}
+                      onChange={handleDeliveryChange("phone")}
+                      className={`w-full border rounded-lg p-3 focus:ring-red-500 focus:border-red-500 ${
+                        deliveryErrors.phone ? "border-red-400 bg-red-50/40" : "border-gray-300"
+                      }`}
+                      placeholder="020 123 4567"
+                    />
+                    {deliveryErrors.phone && (
+                      <p className="mt-1 text-xs text-red-600">{deliveryErrors.phone}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Address (Accra)</label>
-                    <textarea className="w-full border border-gray-300 rounded-lg p-3 focus:ring-red-500 focus:border-red-500" rows={3} placeholder="East Legon, near ANC Mall"></textarea>
+                    <textarea
+                      value={delivery.address}
+                      onChange={handleDeliveryChange("address")}
+                      className={`w-full border rounded-lg p-3 focus:ring-red-500 focus:border-red-500 ${
+                        deliveryErrors.address ? "border-red-400 bg-red-50/40" : "border-gray-300"
+                      }`}
+                      rows={3}
+                      placeholder="East Legon, near ANC Mall"
+                    ></textarea>
+                    {deliveryErrors.address && (
+                      <p className="mt-1 text-xs text-red-600">{deliveryErrors.address}</p>
+                    )}
                   </div>
                   
                   <div className="pt-4 border-t border-gray-100">
@@ -243,26 +352,45 @@ export default function Cart() {
                 </div>
               </div>
 
+              {orderError && (
+                <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3 flex items-start gap-2">
+                  <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+                  <span>{orderError}</span>
+                </div>
+              )}
+
               {step < 3 ? (
-                <button 
-                  onClick={() => setStep(step + 1)}
+                <button
+                  onClick={() => goToStep(step + 1)}
                   className="w-full bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
                 >
                   Continue <ArrowRight size={18} />
                 </button>
               ) : (
-                <button 
+                <button
                   onClick={placeOrder}
-                  className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                  disabled={placing}
+                  className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
                 >
-                  Place Order <ShieldCheck size={18} />
+                  {placing ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Processing…</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck size={18} />
+                      {paymentMethod === "paystack" ? "Pay with Paystack" : "Place Order"}
+                    </>
+                  )}
                 </button>
               )}
-              
+
               {step > 1 && (
-                <button 
+                <button
                   onClick={() => setStep(step - 1)}
-                  className="w-full mt-3 bg-white text-gray-600 border border-gray-200 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                  disabled={placing}
+                  className="w-full mt-3 bg-white text-gray-600 border border-gray-200 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
                   Back
                 </button>
