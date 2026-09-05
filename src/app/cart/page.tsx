@@ -13,6 +13,7 @@ export default function Cart() {
   const { isLoggedIn, isLoading: isAuthLoading } = useAuth();
   const { items: cartItems, updateQuantity, removeFromCart } = useCart();
   const [step, setStep] = useState(1); // 1: Cart, 2: Delivery, 3: Payment
+  const [paymentMethod, setPaymentMethod] = useState<"paystack" | "cod">("paystack");
 
   const subtotal = cartItems.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
   const deliveryFee = 15.00;
@@ -141,15 +142,15 @@ export default function Cart() {
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                    <input type="text" className="w-full border border-gray-300 rounded-lg p-3 focus:ring-red-500 focus:border-red-500" defaultValue="Kwame Mensah" />
+                    <input type="text" className="w-full border border-gray-300 rounded-lg p-3 focus:ring-red-500 focus:border-red-500" placeholder="Kwame Mensah" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                    <input type="tel" className="w-full border border-gray-300 rounded-lg p-3 focus:ring-red-500 focus:border-red-500" defaultValue="020 123 4567" />
+                    <input type="tel" className="w-full border border-gray-300 rounded-lg p-3 focus:ring-red-500 focus:border-red-500" placeholder="020 123 4567" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Address (Accra)</label>
-                    <textarea className="w-full border border-gray-300 rounded-lg p-3 focus:ring-red-500 focus:border-red-500" rows={3} defaultValue="East Legon, near ANC Mall"></textarea>
+                    <textarea className="w-full border border-gray-300 rounded-lg p-3 focus:ring-red-500 focus:border-red-500" rows={3} placeholder="East Legon, near ANC Mall"></textarea>
                   </div>
                   
                   <div className="pt-4 border-t border-gray-100">
@@ -176,24 +177,32 @@ export default function Cart() {
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2"><CreditCard size={24} className="text-red-600"/> Payment Method</h2>
                 
                 <div className="space-y-4">
-                  <label className="flex items-center gap-4 border border-red-600 bg-red-50 p-4 rounded-lg cursor-pointer">
-                    <input type="radio" name="payment" className="text-red-600 focus:ring-red-600 h-5 w-5" defaultChecked />
+                  <label className={`flex items-center gap-4 border p-4 rounded-lg cursor-pointer transition-colors ${
+                    paymentMethod === "paystack" ? "border-red-600 bg-red-50" : "border-gray-200 hover:border-gray-300"
+                  }`}>
+                    <input
+                      type="radio"
+                      name="payment"
+                      className="text-red-600 focus:ring-red-600 h-5 w-5"
+                      checked={paymentMethod === "paystack"}
+                      onChange={() => setPaymentMethod("paystack")}
+                    />
                     <div>
-                      <div className="font-semibold text-gray-900">Mobile Money</div>
-                      <div className="text-sm text-gray-500">MTN MoMo, Vodafone Cash, AirtelTigo</div>
+                      <div className="font-semibold text-gray-900">Pay with Paystack</div>
+                      <div className="text-sm text-gray-500">Accepts Mobile Money &amp; Bank Transfer — MTN MoMo, Vodafone Cash, AirtelTigo</div>
                     </div>
                   </label>
                   
-                  <label className="flex items-center gap-4 border border-gray-200 hover:border-gray-300 p-4 rounded-lg cursor-pointer">
-                    <input type="radio" name="payment" className="text-red-600 focus:ring-red-600 h-5 w-5" />
-                    <div>
-                      <div className="font-semibold text-gray-900">Credit / Debit Card</div>
-                      <div className="text-sm text-gray-500">Visa, Mastercard</div>
-                    </div>
-                  </label>
-                  
-                  <label className="flex items-center gap-4 border border-gray-200 hover:border-gray-300 p-4 rounded-lg cursor-pointer">
-                    <input type="radio" name="payment" className="text-red-600 focus:ring-red-600 h-5 w-5" />
+                  <label className={`flex items-center gap-4 border p-4 rounded-lg cursor-pointer transition-colors ${
+                    paymentMethod === "cod" ? "border-red-600 bg-red-50" : "border-gray-200 hover:border-gray-300"
+                  }`}>
+                    <input
+                      type="radio"
+                      name="payment"
+                      className="text-red-600 focus:ring-red-600 h-5 w-5"
+                      checked={paymentMethod === "cod"}
+                      onChange={() => setPaymentMethod("cod")}
+                    />
                     <div>
                       <div className="font-semibold text-gray-900">Cash on Delivery</div>
                       <div className="text-sm text-gray-500">Pay when your order arrives</div>
@@ -203,7 +212,11 @@ export default function Cart() {
                 
                 <div className="mt-8 bg-gray-50 p-4 rounded-lg flex items-start gap-3">
                   <ShieldCheck className="text-gray-400 mt-0.5" size={20} />
-                  <p className="text-sm text-gray-600">Payments are secure and encrypted. Mobile Money prompt will be sent to your phone after placing the order.</p>
+                  <p className="text-sm text-gray-600">
+                    {paymentMethod === "paystack"
+                      ? "Payments are secure and encrypted. You'll be redirected to Paystack to complete your payment after placing the order."
+                      : "Pay with cash when your order arrives. Please have the exact amount ready for the courier."}
+                  </p>
                 </div>
               </div>
             )}
