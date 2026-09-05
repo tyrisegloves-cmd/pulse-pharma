@@ -17,7 +17,6 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [imageZoom, setImageZoom] = useState({ x: 0, y: 0 });
@@ -321,26 +320,9 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
               </div>
             </div>
 
-            {/* Quantity & Add to Cart */}
-            <div className="flex items-center gap-4 mb-8">
-              <div className="flex border border-gray-300 rounded-lg overflow-hidden bg-white">
-                <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-4 py-3 bg-gray-50 hover:bg-gray-100 text-gray-600 font-medium transition-colors"
-                >
-                  −
-                </button>
-                <div className="px-6 py-3 bg-white text-gray-900 font-bold flex items-center justify-center min-w-20">
-                  {quantity}
-                </div>
-                <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="px-4 py-3 bg-gray-50 hover:bg-gray-100 text-gray-600 font-medium transition-colors"
-                >
-                  +
-                </button>
-              </div>
-              <AddToCartButton product={product} quantity={quantity} />
+            {/* Add to Cart — quantities are adjusted in the cart at checkout */}
+            <div className="flex mb-8">
+              <AddToCartButton product={product} />
             </div>
 
             {/* Action Buttons */}

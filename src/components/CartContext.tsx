@@ -35,7 +35,8 @@ interface CartContextValue {
   /** Sum of all line quantities — drives the header badge */
   count: number;
   /** Add a product to the cart. If it's already there the quantity is left
-      untouched — quantities are only adjusted from the cart (checkout). */
+      untouched — quantities are only adjusted from the cart (checkout).
+      The optional quantity applies only to the initial add (refill reorders). */
   addToCart: (product: Medicine, quantity?: number) => void;
   /** Replace the quantity of a line, removing it if quantity hits 0 */
   updateQuantity: (id: string, delta: number) => void;
