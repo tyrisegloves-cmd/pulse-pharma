@@ -52,19 +52,31 @@ function mapProfile(row: DbProfileRow): Profile {
  * If no session is present Supabase returns no rows, which we surface as a
  * "not signed in" error rather than a generic failure.
  */
-export async function getMyProfile(): Promise<ServiceResult<Profile>> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+/**
+ * @param userId Skip the `auth.getUser()` network validation when the caller
+ *               already holds the authenticated user's id (e.g. AuthContext,
+ *               which receives it from onAuthStateChange). Saves a full
+ *               round-trip to the auth server on every sign-in.
+ */
+export async function getMyProfile(
+  userId?: string
+): Promise<ServiceResult<Profile>> {
+  let id = userId;
+  if (!id) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    id = user?.id;
+  }
 
-  if (!user) {
+  if (!id) {
     return fail("You must be signed in to view your profile.");
   }
 
   const { data, error } = await supabase
     .from("profiles")
     .select("id, full_name, email, phone, role, created_at, updated_at")
-    .eq("id", user.id)
+    .eq("id", id)
     .maybeSingle();
 
   if (error) {

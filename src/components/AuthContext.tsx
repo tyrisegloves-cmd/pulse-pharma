@@ -28,6 +28,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useRef,
 } from "react";
 import type { User, AuthError } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
@@ -102,6 +103,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Last user id whose profile was fetched. Auth events fire often during a
+  // sign-in (INITIAL_SESSION → SIGNED_IN → TOKEN_REFRESHED); without this
+  // guard each one re-queries the profiles table for the same user.
+  const roleFetchedFor = useRef<string | null>(null);
+
   /**
    * Fetch the signed-in user's role from the profiles table. Called after the
    * session is established. Failures are non-fatal — we just fall back to null
@@ -109,10 +115,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    */
   const refreshRole = useCallback(async (currentUser: User | null) => {
     if (!currentUser) {
+      roleFetchedFor.current = null;
       setRole(null);
       return;
     }
-    const { data } = await getMyProfile();
+    if (roleFetchedFor.current === currentUser.id) return;
+    roleFetchedFor.current = currentUser.id;
+    // Pass the id directly — we already hold the user here, so there's no
+    // need for getMyProfile to re-validate it with another auth-server call.
+    const { data } = await getMyProfile(currentUser.id);
     setRole(data?.role ?? null);
   }, []);
 

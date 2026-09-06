@@ -389,12 +389,13 @@ function AuthPageInner() {
 
     const { error } = await signIn({ email: siEmail, password: siPass });
 
-    const elapsed = Date.now() - startedAt;
-    if (elapsed < 700) {
-      await new Promise((r) => setTimeout(r, 700 - elapsed));
-    }
-
     if (error) {
+      // Give the spinner a brief floor on failure so a fast rejection
+      // doesn't flash and look like "nothing happened".
+      const elapsed = Date.now() - startedAt;
+      if (elapsed < 350) {
+        await new Promise((r) => setTimeout(r, 350 - elapsed));
+      }
       const lower = (error.message || "").toLowerCase();
       // Friendly message for the most common failures.
       let msg: string;
@@ -410,8 +411,8 @@ function AuthPageInner() {
       return;
     }
 
-    // Success — onAuthStateChange fires SIGNED_IN in AuthContext automatically.
-    // Redirect to homepage (or wherever the user came from).
+    // Success — redirect immediately; no artificial delay before navigation.
+    // onAuthStateChange fires SIGNED_IN in AuthContext automatically.
     const next = searchParams.get("next") ?? "/";
     router.push(next);
   };
@@ -443,9 +444,8 @@ function AuthPageInner() {
       return;
     }
 
-    // Record start time so we can keep the loading state visible long enough
-    // for the animation to register — without this, a fast failure flashes the
-    // spinner for a few ms and looks like "nothing happened".
+    // Record start time so a fast failure can be held briefly for the
+    // animation to register — success paths are never delayed.
     const startedAt = Date.now();
     setLoading(true);
 
@@ -456,13 +456,11 @@ function AuthPageInner() {
       phone: suPhone,
     });
 
-    // Hold the spinner for at least 700ms regardless of how fast this resolved.
-    const elapsed = Date.now() - startedAt;
-    if (elapsed < 700) {
-      await new Promise((r) => setTimeout(r, 700 - elapsed));
-    }
-
     if (error) {
+      const elapsed = Date.now() - startedAt;
+      if (elapsed < 350) {
+        await new Promise((r) => setTimeout(r, 350 - elapsed));
+      }
       // Supabase sometimes surfaces a server-side failure (e.g. HTTP 500
       // "Database error saving new user") as a near-empty AuthError whose
       // `.message` stringifies to "{}". Fall back to a clear, actionable
