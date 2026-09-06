@@ -138,6 +138,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setNotification(null);
   }, []);
 
+  // Auto-dismiss the add-to-cart toast after NOTIFICATION_MS — the progress
+  // bar rendered by CartToast drains over the same duration. A new
+  // notification (rapid consecutive adds) restarts the timer, matching the
+  // bar, which also restarts via the notification's changing key.
+  useEffect(() => {
+    if (!notification) return;
+    if (notifTimeoutRef.current) clearTimeout(notifTimeoutRef.current);
+    notifTimeoutRef.current = setTimeout(() => {
+      setNotification(null);
+      notifTimeoutRef.current = null;
+    }, NOTIFICATION_MS);
+    return () => {
+      if (notifTimeoutRef.current) {
+        clearTimeout(notifTimeoutRef.current);
+        notifTimeoutRef.current = null;
+      }
+    };
+  }, [notification]);
+
   /** Shared add logic — used directly when signed in and by the pending-add
       processor right after a guest authenticates. */
   const performAdd = useCallback(
