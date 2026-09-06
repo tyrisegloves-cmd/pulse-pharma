@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import Link from "next/link";
 import { Stethoscope } from "lucide-react";
@@ -91,6 +92,7 @@ export default function RootLayout({
         </footer>
           </CartProvider>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
