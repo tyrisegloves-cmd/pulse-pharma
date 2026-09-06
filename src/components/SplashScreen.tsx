@@ -17,11 +17,14 @@ export function SplashScreen() {
     // Lock scroll while the splash is visible
     document.body.style.overflow = "hidden";
 
-    const hideTimer = setTimeout(() => setHiding(true), 2100);
+    // Kept brief: this overlay sits in front of EVERY full page load —
+    // including /auth — so every second here is a second the user waits
+    // before they can interact with the app.
+    const hideTimer = setTimeout(() => setHiding(true), 1200);
     const goneTimer = setTimeout(() => {
       setGone(true);
       document.body.style.overflow = "";
-    }, 2700);
+    }, 1600);
 
     return () => {
       clearTimeout(hideTimer);

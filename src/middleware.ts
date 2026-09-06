@@ -97,17 +97,28 @@ export async function middleware(request: NextRequest) {
 }
 
 /**
- * Only run middleware on the routes we care about. Skipping static assets and
- * Next internals keeps the Edge function fast.
+ * Only run middleware where a server-side auth decision is actually needed:
+ * protected routes (redirect unauthenticated users) and auth pages (bounce
+ * already-signed-in users away from the login form).
+ *
+ * PERFORMANCE: `getUser()` validates the JWT with the Supabase auth server —
+ * a network round-trip on every matched request. Running it on public pages
+ * (home, shop, ask, …) added hundreds of ms to every navigation for a check
+ * whose result was never used. Public routes are left untouched here; the
+ * browser client refreshes tokens on its own (autoRefreshToken), and the
+ * protected routes still get the full server-side check below.
  */
 export const config = {
   matcher: [
-    /*
-     * Match all request paths EXCEPT:
-     *   - _next/static, _next/image, favicon (static assets)
-     *   - api routes (handled separately, if at all)
-     *   - files with an extension (e.g. *.png, *.css)
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.).*)",
+    "/account",
+    "/account/:path*",
+    "/cart",
+    "/cart/:path*",
+    "/track",
+    "/track/:path*",
+    "/orders",
+    "/orders/:path*",
+    "/auth",
+    "/auth/:path*",
   ],
 };
