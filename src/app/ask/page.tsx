@@ -318,7 +318,7 @@ export default function AskPharmacist() {
     setInput(e.target.value);
     const el = e.target;
     el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -377,7 +377,7 @@ export default function AskPharmacist() {
 
         <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-6">
           {/* ── Chat card ── */}
-          <div className="flex h-[calc(100dvh-16rem)] max-h-[860px] min-h-[440px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm sm:h-[640px] lg:h-[calc(100dvh-13rem)]">
+          <div className="flex h-[calc(100dvh-14rem)] min-h-[440px] max-h-[1200px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm sm:h-[calc(100dvh-14.5rem)]">
 
             {/* Chat header */}
             <div className="flex items-center justify-between gap-3 bg-gray-900 p-3 sm:p-4">
@@ -433,7 +433,7 @@ export default function AskPharmacist() {
                 return (
                   <div
                     key={idx}
-                    className={`flex max-w-[88%] gap-2.5 sm:max-w-[80%] sm:gap-3 ${
+                    className={`flex max-w-[88%] gap-2.5 sm:max-w-[85%] sm:gap-3 ${
                       isUser ? "ml-auto flex-row-reverse" : "self-start"
                     }`}
                   >
@@ -542,13 +542,13 @@ export default function AskPharmacist() {
               >
                 <textarea
                   ref={textareaRef}
-                  rows={1}
+                  rows={2}
                   value={input}
                   onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
                   placeholder="Describe your symptoms, ask about a medicine…"
                   aria-label="Your message to the pharmacist"
-                  className="max-h-[120px] flex-grow resize-none rounded-xl border border-gray-300 p-3 text-[15px] focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                  className="max-h-[160px] flex-grow resize-none rounded-xl border border-gray-300 p-3 text-[15px] focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
                 />
                 <button
                   type="submit"
