@@ -34,6 +34,11 @@ export function AuthPromptModal({ isOpen, productName, onClose }: AuthPromptModa
   }, [isOpen, onClose]);
 
   const goAuth = (tab: "signin" | "signup") => {
+    // Close the prompt BEFORE navigating. This modal is rendered by
+    // CartProvider in the root layout, so it survives client-side
+    // navigation — without this, it would stay open covering the /auth
+    // page and the button would appear to do nothing.
+    onClose();
     const next = encodeURIComponent(
       `${window.location.pathname}${window.location.search}`
     );
