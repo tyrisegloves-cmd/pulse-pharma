@@ -1,169 +1,181 @@
 # Pulse Pharma
 
-Your trusted e-health platform and retail pharmacy — based in Accra, Ghana.
+> A modern online pharmacy for discovering medicines, uploading prescriptions, consulting pharmacists, and arranging delivery in Accra, Ghana.
 
-## Quick Start
+Pulse Pharma is a full-stack e-health and retail pharmacy application built to make access to everyday health products more convenient. Customers can browse a searchable medicine catalogue, filter products by category and availability, add items to a cart, place orders, pay securely, and manage their account from one place.
 
-### 1. Install dependencies
+## Highlights
+
+- **Online medicine catalogue** with search, categories, stock filters, and prescription-only filters
+- **Prescription workflow** for submitting a prescription for pharmacist review
+- **Shopping cart and checkout** with delivery details and delivery options
+- **Flexible payments** through Paystack or Cash on Delivery
+- **Secure payment processing** with Paystack verification and signed webhooks
+- **Customer accounts** with authentication, profile management, password updates, and order history
+- **Order tracking and receipts** with downloadable PDF receipts
+- **Refill reminders** based on previously purchased medicines
+- **Responsive interface** designed for desktop and mobile devices
+- **Row Level Security** policies protecting customer profiles, orders, and payment records
+
+## Tech Stack
+
+- **Framework:** Next.js 16 with the App Router
+- **Language:** TypeScript
+- **UI:** React 19, Tailwind CSS 4, Framer Motion, Lucide React
+- **Authentication and database:** Supabase Auth, PostgreSQL, and Row Level Security
+- **Payments:** Paystack, supporting cards, bank transfers, and mobile money
+- **PDF generation:** PDFKit
+- **Deployment:** Compatible with Node.js hosting platforms such as Vercel
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 20 or newer
+- npm
+- A Supabase project
+- A Paystack account if you want to enable online payments
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/tyrisegloves-cmd/pulse-pharma.git
+cd pulse-pharma
+```
+
+### 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 2. Configure environment variables
+### 3. Configure environment variables
+
+Create a local environment file from the provided template:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Fill in the two Supabase values — find them in your project's dashboard under
-**Settings → API**:
+Update `.env.local` with values from your Supabase and Paystack dashboards:
 
-| Variable | Description |
-|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Your project URL (e.g. `https://xxxxx.supabase.co`) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | The public / anon key |
+| Variable | Required | Description |
+|---|---:|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Yes | Supabase publishable/anon key |
+| `PAYSTACK_SECRET_KEY` | For Paystack | Server-only Paystack secret key |
+| `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | Optional | Public Paystack key for browser-side integrations |
+| `NEXT_PUBLIC_SITE_URL` | Yes | Public application URL used for payment callbacks |
+| `SUPABASE_SERVICE_ROLE_KEY` | For payments | Server-only key used by payment verification and webhooks |
 
-### 3. Set up the database (first time only)
+Never commit `.env.local`, Paystack secret keys, or the Supabase service-role key. Server-only secrets must not use the `NEXT_PUBLIC_` prefix.
 
-The app depends on a `profiles` table, a signup trigger, and RLS policies.
-These are tracked as versioned migrations in [`supabase/migrations/`](supabase/migrations/).
+### 4. Apply the database migrations
 
-You have two options:
+The database schema is versioned in [`supabase/migrations`](supabase/migrations). The migrations create and align the profiles, medicines, categories, orders, order items, and payments functionality, as well as their security policies.
 
-#### Option A — Supabase CLI (recommended)
-
-The CLI pushes migrations from this repo directly to your remote database, so
-schema changes are always tracked in Git alongside the code that uses them.
+Using the Supabase CLI is recommended:
 
 ```bash
-# Install the Supabase CLI (one-time)
 npm install -g supabase
-
-# Link this repo to your remote Supabase project
-supabase link --project-ref bjqkpiffgwxqtgyidqwv
-
-# Push every migration in supabase/migrations/ to the remote database
+supabase login
+supabase link --project-ref YOUR_PROJECT_REF
 supabase db push
 ```
 
-#### Option B — Supabase Dashboard (manual)
+Alternatively, run the migration files in order from the Supabase Dashboard's **SQL Editor**. Keep schema changes in versioned migration files rather than editing production policies manually.
 
-If you prefer not to install the CLI, run the migration SQL directly in the
-dashboard:
-
-1. Go to **Supabase Dashboard → SQL Editor → New query**.
-2. Paste the full contents of [`supabase/migrations/20260729_profiles_and_rls.sql`](supabase/migrations/20260729_profiles_and_rls.sql).
-3. Click **Run**.
-
-> ⚠️ This script is **idempotent** — safe to re-run. It drops all existing
-> policies on `profiles` before recreating them, which prevents stale
-> Dashboard-added policies from causing recursive RLS errors.
-
-### 4. Run the dev server
+### 5. Start the development server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
----
+## Paystack Webhooks
 
-## Database Migrations
+To update payment and order status reliably, configure the following endpoint in the Paystack dashboard:
 
-All schema changes live in [`supabase/migrations/`](supabase/migrations/) as
-timestamped SQL files. The current migration creates:
-
-- **`public.profiles`** — 1:1 profile row per auth user (`customer` / `admin` role).
-- **`handle_new_user()`** — trigger that auto-creates a profile on signup.
-- **RLS policies** — users can read/update only their own row; customers cannot
-  self-promote to `admin`.
-
-### Creating a new migration
-
-```bash
-supabase migration new describe_your_change
-# edit the generated .sql file…
-supabase db push
+```text
+https://YOUR_DOMAIN/api/payments/webhook
 ```
 
-This keeps every schema change versioned in Git. Avoid editing policies or
-triggers directly in the Supabase Dashboard — untracked changes diverge from the
-repo and can cause hard-to-debug issues (e.g. recursive RLS policies breaking
-signups).
+The webhook validates Paystack's `x-paystack-signature` header and uses the server-only service-role client to update payment records. Set `NEXT_PUBLIC_SITE_URL` to the same public domain used by the callback flow.
 
----
-Here's how to commit and push files in **Visual Studio Code**:
+For local development, use a secure tunnel such as ngrok or Cloudflare Tunnel if Paystack needs to reach your local webhook endpoint.
 
-### Step-by-step
+## Application Routes
 
-1. **Open the Source Control panel**
-   - Click the **branch icon** in the left sidebar (or press `Ctrl+Shift+G`)
-
-2. **Stage your changes**
-   - You'll see your changed/new files listed under **Changes**
-   - Click the **+** icon next to each file to stage it (or hover over "Changes" and click **+** to stage all)
-
-3. **Write a commit message**
-   - At the top of the Source Control panel, type a message in the **"Message"** input box
-   - e.g. `feat: add new settings page`
-
-4. **Commit**
-   - Click the **✓ checkmark button** (or press `Ctrl+Enter`) to commit
-
-5. **Push to GitHub**
-   - Click the **"..."** (more actions) button at the top of the Source Control panel
-   - Select **Push** (or click the sync icon ↑↓ at the bottom status bar)
-
-### Keyboard shortcuts
-
-| Action | Shortcut |
-|--------|----------|
-| Open Source Control | `Ctrl+Shift+G` |
-| Commit all | `Ctrl+Enter` |
-| Push | Click ↑↓ in the bottom-right status bar |
-
-### Quick tips
-- If you see **"Publish Branch"** instead of Push, it means your branch hasn't been pushed yet — click that to push it to GitHub.
-- The **bottom status bar** shows your current branch name — click it to switch branches or create new ones.
-- If there are merge conflicts, VS Code will highlight them and let you resolve them inline.
+| Route | Purpose |
+|---|---|
+| `/` | Pharmacy landing page and featured products |
+| `/shop` | Searchable and filterable medicine catalogue |
+| `/cart` | Cart, delivery details, and checkout |
+| `/upload-prescription` | Prescription submission flow |
+| `/ask` | Ask a pharmacist |
+| `/account` | Orders, account overview, and customer actions |
+| `/account/settings` | Profile and password settings |
+| `/account/refill-reminders` | Previously purchased medicines and reorder options |
+| `/auth` | Sign in and account registration |
 
 ## Project Structure
 
-```
+```text
 src/
-├── app/                # Next.js App Router pages
-│   ├── auth/           # Sign in / sign up / forgot / reset password
-│   └── …
-├── components/        # React components (AuthContext, Navbar, etc.)
-├── lib/                # Utilities, Supabase client, validation
-├── services/           # Data-access layer (profiles, medicines, orders)
-└── db/                 # Drizzle ORM schema (unused — data lives in Supabase)
+├── app/                 # Next.js routes, pages, and API handlers
+│   ├── api/             # Payment, order, and receipt endpoints
+│   ├── auth/            # Sign in, sign up, and password recovery
+│   ├── account/         # Customer account pages
+│   ├── shop/            # Product catalogue
+│   └── cart/            # Cart and checkout
+├── components/          # Shared UI, authentication, cart, and layout components
+├── lib/                 # Supabase clients, validation, payments, and PDF utilities
+└── services/            # Data-access functions for products, orders, profiles, and categories
 
 supabase/
-├── config.toml         # Supabase CLI configuration
-└── migrations/          # Versioned SQL migrations
-    └── 20260729_profiles_and_rls.sql
+├── config.toml          # Supabase CLI configuration
+└── migrations/          # Versioned PostgreSQL migrations and RLS policies
 ```
 
----
-
-## Scripts
+## Available Scripts
 
 | Command | Description |
 |---|---|
-| `npm run dev` | Start development server |
-| `npm run build` | Production build |
-| `npm run start` | Start production server |
+| `npm run dev` | Start the development server |
+| `npm run build` | Create a production build |
+| `npm run start` | Start the production server |
 | `npm run lint` | Run ESLint |
-| `npm run typecheck` | TypeScript type-check |
+| `npm run typecheck` | Run the TypeScript compiler without emitting files |
 
----
+Before opening a pull request, run:
 
-## Tech Stack
+```bash
+npm run lint
+npm run typecheck
+npm run build
+```
 
-- **Framework:** Next.js 16 (App Router)
-- **Styling:** Tailwind CSS 4, Framer Motion
-- **Auth / DB:** Supabase (cookie-based sessions, RLS)
-- **Language:** TypeScript
+## Security Notes
+
+- Supabase Row Level Security limits customers to their own profile, order, and payment data.
+- Customers cannot promote themselves to an administrator through profile updates.
+- Payment status changes are performed by trusted server-side routes after verification.
+- Paystack webhook requests are authenticated using HMAC-SHA512 signatures.
+- Do not expose `PAYSTACK_SECRET_KEY` or `SUPABASE_SERVICE_ROLE_KEY` to the browser.
+- Prescription and medication decisions should be reviewed by qualified, licensed pharmacy professionals. This application does not replace professional medical advice.
+
+## Contributing
+
+1. Create a feature branch.
+2. Make focused changes and update migrations when the database schema changes.
+3. Run linting, type-checking, and the production build.
+4. Open a pull request with a clear description of the change and any required environment or migration steps.
+
+## License
+
+No license has currently been specified for this repository. Contact the repository owner before using, distributing, or adapting the code.
+
+## Contact
+
+For project questions or support, open an issue in the [Pulse Pharma repository](https://github.com/tyrisegloves-cmd/pulse-pharma/issues).
