@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, Suspense } from "react";
+import { Turnstile } from "@marsidev/react-turnstile";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LogoPulse } from "@/components/LogoPulse";
@@ -340,6 +341,8 @@ function AuthPageInner() {
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaWidgetKey, setCaptchaWidgetKey] = useState(0);
 
   /* feedback state */
   const [feedback, setFeedback] = useState<{
@@ -363,6 +366,8 @@ function AuthPageInner() {
   /* ── switch tab (clear feedback + pass) ── */
   const switchTab = (t: "signin" | "signup") => {
     setTab(t);
+    setCaptchaToken(null);
+    setCaptchaWidgetKey((key) => key + 1);
     clearFeedback();
     setShowPass(false);
     setShowConfirmPass(false);
@@ -444,17 +449,31 @@ function AuthPageInner() {
       return;
     }
 
+    if (!captchaToken) {
+      setFeedback({ type: "error", message: "Please complete the security check before creating your account." });
+      return;
+    }
+
     // Record start time so a fast failure can be held briefly for the
     // animation to register — success paths are never delayed.
     const startedAt = Date.now();
     setLoading(true);
 
-    const { error } = await signUp({
-      email: suEmail,
-      password: suPass,
-      fullName: suName,
-      phone: suPhone,
-    });
+    let error;
+    try {
+      ({ error } = await signUp({
+        email: suEmail,
+        password: suPass,
+        fullName: suName,
+        phone: suPhone,
+        captchaToken,
+      }));
+    } catch {
+      error = { message: "We couldn't create your account right now. Please try again in a moment." };
+    } finally {
+      setCaptchaToken(null);
+      setCaptchaWidgetKey((key) => key + 1);
+    }
 
     if (error) {
       const elapsed = Date.now() - startedAt;
@@ -575,7 +594,7 @@ function AuthPageInner() {
 
         {/* forms */}
         <AnimatePresence mode="wait">
-          {tab === "signin" ? (
+        {tab === "signin" ? (
             <motion.form
               key="signin"
               initial={{ opacity: 0, x: -16 }}
@@ -761,7 +780,27 @@ function AuthPageInner() {
                 </div>
               </div>
 
-              <button type="submit" disabled={loading} style={s.submitBtn(loading)}>
+              {/* Turnstile is scoped to registration only. */}
+              {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? (
+                <div style={{ display: "flex", justifyContent: "center", overflowX: "auto", padding: "0.25rem 0" }}>
+                  <Turnstile
+                    key={captchaWidgetKey}
+                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                    onSuccess={(token) => setCaptchaToken(token)}
+                    onExpire={() => setCaptchaToken(null)}
+                    onError={() => {
+                      setCaptchaToken(null);
+                      setFeedback({ type: "error", message: "The security check could not load. Please refresh and try again." });
+                    }}
+                  />
+                </div>
+              ) : (
+                <p role="alert" style={{ color: "#991b1b", fontSize: "0.8rem", textAlign: "center" }}>
+                  The security check is not configured yet. Please try again later.
+                </p>
+              )}
+
+              <button type="submit" disabled={loading || !captchaToken} style={s.submitBtn(loading || !captchaToken)}>
                 {loading && <span style={s.shimmer} aria-hidden="true" />}
                 {loading ? <><Spinner /> Creating Account…</> : <>Create Account <ArrowRight size={16} /></>}
               </button>
