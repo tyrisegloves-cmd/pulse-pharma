@@ -154,16 +154,16 @@ export default async function Home() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-36">
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-600/90 text-white text-sm font-semibold mb-6 shadow-sm ring-1 ring-white/20">
-              <ShieldCheck size={16} /> Licensed Pharmacy in Accra
+              <ShieldCheck size={16} /> Delivering right after a tap
             </span>
             <h1 className="text-4xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.05] mb-6 drop-shadow-[0_2px_16px_rgba(0,0,0,0.5)]">
               Your health,{" "}
-              <span className="text-red-400">delivered</span> with precision and
-              care.
+              <span className="text-red-400">delivered</span> with care and
+              utmost authenticity.
             </h1>
             <p className="text-lg text-gray-100/90 mb-8 max-w-lg drop-shadow-[0_1px_8px_rgba(0,0,0,0.5)]">
-              Get your prescriptions filled and everyday health essentials
-              delivered to your door in hours. Verified by licensed pharmacists.
+              Get professional prescription checks and your everyday health essentials
+              delivered to your doorstep in minutes.
             </p>
 
             {/* Search — solid white card keeps form controls always legible */}
@@ -175,7 +175,7 @@ export default async function Home() {
                 name="search"
                 type="text"
                 className="block w-full pl-11 pr-32 py-3.5 rounded-lg bg-transparent text-gray-900 placeholder-gray-500 focus:outline-none"
-                placeholder="Search for medication (e.g. Paracetamol)..."
+                placeholder="Search for your medications,essentials,.............."
               />
               <button type="submit" className="absolute inset-y-1.5 right-1.5 px-5 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm">
                 Search
@@ -183,7 +183,7 @@ export default async function Home() {
             </form>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium text-gray-200">
-              <span className="text-gray-300/80">Popular:</span>
+              <span className="text-gray-300/80">Recent searches:</span>
               <Link
                 href="/shop?category=Pain+Relief"
                 className="text-white hover:text-red-300 underline decoration-red-400/60 underline-offset-4 transition-colors"
@@ -211,8 +211,8 @@ export default async function Home() {
                   <FileText size={22} />
                 </div>
                 <div>
-                  <div className="font-bold text-gray-900">Easy Rx Upload</div>
-                  <div className="text-sm text-gray-500">Fast pharmacist verification</div>
+                  <div className="font-bold text-gray-900">Easy prescription upload</div>
+                  <div className="text-sm text-gray-500">Fast pharmacist verification and reponse</div>
                 </div>
               </div>
             </div>
@@ -228,21 +228,21 @@ export default async function Home() {
               <ShieldCheck className="text-red-600 w-8 h-8" />
               <div>
                 <h3 className="font-bold text-gray-900">Licensed Pharmacy</h3>
-                <p className="text-sm text-gray-500">Pharmacy Council Reg: PCG-2026-X8</p>
+                <p className="text-sm text-gray-500">Licensed and fully operational</p>
               </div>
             </Reveal>
             <Reveal delay={100} className="flex items-center gap-4 p-4 md:p-0 md:justify-center">
               <CheckCircle className="text-red-600 w-8 h-8" />
               <div>
-                <h3 className="font-bold text-gray-900">Verified Pharmacists</h3>
-                <p className="text-sm text-gray-500">Expert advice when you need it</p>
+                <h3 className="font-bold text-gray-900">Verified Licensed Pharmacists</h3>
+                <p className="text-sm text-gray-500">Expert the best advice and recommendations when you need it</p>
               </div>
             </Reveal>
             <Reveal delay={200} className="flex items-center gap-4 p-4 md:p-0 md:justify-center">
               <Clock className="text-red-600 w-8 h-8" />
               <div>
-                <h3 className="font-bold text-gray-900">Fast Delivery in Accra</h3>
-                <p className="text-sm text-gray-500">Same-day delivery for most orders</p>
+                <h3 className="font-bold text-gray-900">Smart Delivery</h3>
+                <p className="text-sm text-gray-500">Fast delivery and track system in delivery of orders</p>
               </div>
             </Reveal>
           </div>
@@ -255,7 +255,7 @@ export default async function Home() {
           <div className="flex justify-between items-end mb-8">
             <div>
               <h2 id="categories-heading" className="text-2xl font-bold text-gray-900 mb-2">Shop by Category</h2>
-              <p className="text-gray-600">Find exactly what you need quickly.</p>
+              <p className="text-gray-600">Find your esssentials with tabs to make your life easier!</p>
             </div>
             <Link href="/shop" className="text-red-600 font-medium hover:text-red-700 flex items-center gap-1">
               View All <ArrowRight size={16} />
@@ -320,8 +320,8 @@ export default async function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-end mb-8">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Featured Products</h2>
-              <p className="text-gray-600">Commonly requested medications and essentials.</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Recent Searches</h2>
+              <p className="text-gray-600">Frequently requested medications and essentials.</p>
             </div>
             <Link href="/shop" className="text-red-600 font-medium hover:text-red-700 flex items-center gap-1 hidden sm:flex">
               Shop All <ArrowRight size={16} />
@@ -352,7 +352,7 @@ export default async function Home() {
                   Upload Prescription
                 </Link>
                 <Link href="/ask" className="bg-gray-800 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors border border-gray-700 text-center">
-                  Ask a Pharmacist
+                  Ask Your Pharmacist
                 </Link>
               </div>
             </div>
@@ -365,7 +365,7 @@ export default async function Home() {
                   </div>
                   <div>
                     <h3 className="font-bold text-lg mb-1">Upload</h3>
-                    <p className="text-gray-400 text-sm">Snap a picture or upload a PDF of your doctor&apos;s prescription.</p>
+                    <p className="text-gray-400 text-sm">Snap a picture or upload a PDF of your doctor&apos;sprescription.</p>
                   </div>
                 </Reveal>
                 <Reveal delay={120} className="flex items-start gap-4 mb-6">
