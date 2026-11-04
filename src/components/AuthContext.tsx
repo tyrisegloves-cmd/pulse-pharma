@@ -47,6 +47,7 @@ interface SignUpParams {
   password: string;
   fullName?: string;
   phone?: string;
+  captchaToken?: string;
 }
 
 interface AuthResult {
@@ -165,7 +166,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   /* ── signUp ────────────────────────────────────────────────────────────── */
   const signUp = useCallback(
-    async ({ email, password, fullName, phone }: SignUpParams): Promise<AuthResult> => {
+    async ({ email, password, fullName, phone, captchaToken }: SignUpParams): Promise<AuthResult> => {
       const { error } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
@@ -177,6 +178,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             full_name: fullName ?? "",
             phone: phone ?? "",
           },
+          captchaToken,
         },
       });
       return { error };
